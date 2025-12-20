@@ -1,12 +1,12 @@
 :root{
   --bg:#0b1220;
   --card:#0f1a33;
-  --text:#e9eefc;
-  --muted:#a8b3d6;
+  --text:#ffffff;
+  --muted:#e9cbe6;
   --line:#263458;
   --btn:#4a7dff;
   --btn2:#203056;
-  --danger:#ff5a6b;
+  --danger:#dcbabe;
 
   /* إضافات بسيطة */
   --focus: rgba(74,125,255,.35);
@@ -98,6 +98,8 @@ button.btn.btn-sm{ border-radius:12px; }
   border-radius:16px;
   padding:16px;
   box-shadow: var(--shadow);
+    color: white;
+
 }
 
 /* ===== Form ===== */
