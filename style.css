@@ -235,6 +235,7 @@ hr{
   border-radius: 12px;
 }
 
+/* ✅ متوافق مع الـ JS الجديد */
 .destinationsItem{
   display:flex;
   align-items:center;
@@ -258,6 +259,14 @@ hr{
   color: var(--text);
   font-size: 13px;
   line-height: 1.2;
+}
+
+/* ✅ سطر الإنجليزي تحت العربي */
+.destinationsEn{
+  margin-inline-start:auto;
+  font-size: 12px;
+  opacity: .9;
+  text-align: left;
 }
 
 /* ===== Preview ===== */
@@ -381,21 +390,17 @@ hr{
 
 /* ===== Print ===== */
 @media print {
-  /* نخفي الفورم والـ header ونطبع الـ Preview بس */
   body { background: #fff !important; }
   .topbar, .card:not(.previewCard) { display: none !important; }
 
-  /* نخلي الـ preview ياخد الصفحة كلها */
   .grid { display: block !important; padding: 0 !important; }
   .previewCard { border: none !important; box-shadow: none !important; padding: 0 !important; }
   .pdfArea { border-radius: 0 !important; padding: 12mm !important; }
 
-  /* تحسين الطباعة */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   table, tr, td, th { page-break-inside: avoid !important; }
   .pdfSection { break-inside: avoid; }
   h4 { margin-top: 10px; }
 
-  /* A4 margins */
   @page { size: A4; margin: 10mm; }
 }
