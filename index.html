@@ -4,6 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>مُنشئ عرض سعر سياحي</title>
+
+  <!-- Bootstrap RTL -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <link rel="stylesheet" href="style.css" />
 
   <!-- PDF -->
@@ -72,17 +77,42 @@
         </select>
       </label>
 
+      <!-- ✅ الوجهة: Dropdown متعدد الاختيار + بحث -->
       <label class="span2">
         الوجهة (اختر أكثر من وجهة)
-        <select id="destinations" multiple size="3">
-          <option>روسيا</option>
-          <option>التشيك</option>
-          <option>بولندا</option>
-          <option>اذربيجان</option>
-          <option>النمسا</option>
-          <option>اليونان</option>
-        </select>
-        <small class="muted">اضغط Ctrl (ويندوز) لاختيار أكثر من عنصر</small>
+
+        <!-- Hidden select (JS هيملأه بكل دول العالم ويقرأ منه للـ Preview) -->
+        <select id="destinations" multiple class="hidden"></select>
+
+        <div class="dropdown">
+          <button
+            class="btn secondary dropdown-toggle w-100 text-start destinationsBtn"
+            type="button"
+            id="destinationsBtn"
+            data-bs-toggle="dropdown"
+            data-bs-auto-close="outside"
+            aria-expanded="false">
+            اختر الوجهة
+          </button>
+
+          <div class="dropdown-menu w-100 destinationsMenu p-2" aria-labelledby="destinationsBtn">
+            <input
+              id="destinationsSearch"
+              type="text"
+              class="form-control form-control-sm mb-2"
+              placeholder="ابحث عن دولة..."
+              autocomplete="off" />
+
+            <div id="destinationsList" class="destinationsList"></div>
+
+            <div class="d-flex gap-2 mt-2">
+              <button type="button" class="btn btn-sm btn-outline-light w-50" id="btnClearDestinations">مسح</button>
+              <button type="button" class="btn btn-sm w-50" id="btnSelectAllDestinations">اختيار الكل</button>
+            </div>
+          </div>
+        </div>
+
+        <small class="muted">تقدر تختار أكتر من دولة من القائمة (✔️)</small>
       </label>
 
       <label>
@@ -102,6 +132,11 @@
           <option value="4">4</option><option value="5">5</option><option value="6">6</option>
           <option value="7">7</option><option value="8">8</option>
         </select>
+      </label>
+
+      <label class="span2">
+        أعمار الأطفال (اختياري)
+        <input id="childrenAges" type="text" placeholder="مثال: 7 - 9 - 10" />
       </label>
 
       <label>
@@ -136,6 +171,24 @@
             <option>ترانزيت</option>
           </select>
         </label>
+
+        <label>
+          شركة الطيران
+          <select id="airline">
+            <option>طيران الإمارات</option>
+            <option>فلاي دبي</option>
+            <option>الاتحاد</option>
+            <option>العربية للطيران</option>
+            <option>أخرى</option>
+          </select>
+        </label>
+
+        <!-- ✅ span2 عشان ما يلخبطش الـ grid -->
+        <label id="airlineOtherWrap" class="hidden span2">
+          اسم شركة الطيران (أخرى)
+          <input id="airlineOther" type="text" placeholder="اكتب اسم الشركة" />
+        </label>
+
         <label>
           وزن الشنطة
           <select id="baggage">
@@ -147,6 +200,7 @@
           سعر الطيران (رقم)
           <input id="flightPrice" type="number" min="0" value="0" />
         </label>
+
         <label>
           ملاحظات الطيران
           <input id="flightNote" type="text" placeholder="اختياري" />
@@ -226,6 +280,7 @@
             <option value="yes">نعم</option>
           </select>
         </label>
+
         <label id="transferPriceWrap" class="hidden">
           سعر التوصيل (رقم)
           <input id="transferPrice" type="number" min="0" value="0" />
@@ -238,6 +293,7 @@
             <option value="yes">نعم</option>
           </select>
         </label>
+
         <label id="carTypeWrap" class="hidden">
           نوع السيارة (كتابة)
           <input id="carType" type="text" placeholder="مثال: Toyota Camry" />
@@ -260,6 +316,20 @@
           كم جولة؟
           <input id="toursCount" type="number" min="0" value="0" />
         </label>
+
+        <!-- ✅ نقلنا دول جوّا الـ formGrid عشان span2 تشتغل -->
+        <label>
+          هل يوجد انتقالات داخلية (بين المدن/الفنادق)؟
+          <select id="hasIntercity">
+            <option value="no" selected>لا</option>
+            <option value="yes">نعم</option>
+          </select>
+        </label>
+
+        <label id="intercityDetailsWrap" class="hidden span2">
+          تفاصيل الانتقالات الداخلية
+          <input id="intercityDetails" type="text" placeholder="مثال: الانتقالات بين الفندق والكوخ والعكس" />
+        </label>
       </div>
 
       <label class="block">
@@ -276,9 +346,20 @@
         خصم (رقم)
         <input id="discount" type="number" min="0" value="0" />
       </label>
+
       <label>
         ضريبة (%)
         <input id="tax" type="number" min="0" value="0" />
+      </label>
+
+      <label class="span2">
+        عرض السعر
+        <select id="priceDisplay">
+          <option value="auto" selected>تلقائي (لو أكثر من شخص يظهر الإجمالي وسعر الشخص)</option>
+          <option value="total">الإجمالي فقط</option>
+          <option value="perPerson">سعر الشخص فقط</option>
+          <option value="both">الإجمالي + سعر الشخص</option>
+        </select>
       </label>
     </div>
 
@@ -320,6 +401,9 @@
           <div><span class="muted">عدد الأطفال:</span> <span id="pChildren">—</span></div>
         </div>
         <div class="pdfRow">
+          <div class="spanAll"><span class="muted">أعمار الأطفال:</span> <span id="pChildrenAges">—</span></div>
+        </div>
+        <div class="pdfRow">
           <div><span class="muted">تاريخ الذهاب:</span> <span id="pGoDate">—</span></div>
           <div><span class="muted">تاريخ العودة:</span> <span id="pBackDate">—</span></div>
         </div>
@@ -340,6 +424,7 @@
 
       <div class="pdfSection">
         <h4>الفنادق بكل مدينة</h4>
+        <p id="pStaySummary" class="prewrap muted">—</p>
         <table class="pdfTable">
           <thead>
             <tr>
@@ -370,7 +455,16 @@
           <div class="line"><span class="muted">الإجمالي قبل الخصم/الضريبة</span> <span id="pSubtotal">0</span> <span id="pCurr4">AED</span></div>
           <div class="line"><span class="muted">الخصم</span> <span id="pDiscount">0</span> <span id="pCurr5">AED</span></div>
           <div class="line"><span class="muted">الضريبة</span> <span id="pTaxAmount">0</span> <span id="pCurr6">AED</span></div>
-          <div class="grand"><span>الإجمالي النهائي</span> <span id="pGrand">0</span> <span id="pCurr7">AED</span></div>
+
+          <div class="line" id="pPerPersonWrap">
+            <span class="muted">سعر الشخص</span>
+            <span id="pPerPerson">0</span> <span id="pCurrPer">AED</span>
+          </div>
+
+          <div class="grand" id="pGrandWrap">
+            <span>الإجمالي النهائي</span>
+            <span id="pGrand">0</span> <span id="pCurr7">AED</span>
+          </div>
         </div>
       </div>
 
@@ -382,6 +476,12 @@
       <div class="pdfSection">
         <h4>الشروط والأحكام</h4>
         <p id="pTerms" class="prewrap muted">—</p>
+      </div>
+
+      <div class="pdfSection">
+        <p id="pDisclaimer" class="prewrap muted">
+          يرجى ملاحظة: الأسعار والاتاحة عرضه للتغيير حتى تأكيد الحجز.
+        </p>
       </div>
 
       <div class="pdfFooter muted">
