@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>مُنشئ عرض سعر سياحي</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- PDF -->
+  <!-- <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script> -->
+  <script defer src="app.js"></script>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logoBox">TS</div>
+    <div>
+      <h1>مُنشئ عرض سعر سياحي (PDF)</h1>
+      <p class="muted">املأ البيانات… وسيتم توليد عرض السعر PDF تلقائيًا</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" id="btnAddHotel">+ إضافة مدينة/فندق</button>
+    <button class="btn" id="btnDownload">⬇️ تحميل PDF</button>
+  </div>
+</header>
+
+<main class="grid">
+  <!-- FORM -->
+  <section class="card">
+    <h2>بيانات العرض</h2>
+
+    <div class="formGrid">
+      <label>
+        اسم الشركة
+        <input id="companyName" type="text" value="شركة سياحة" />
+      </label>
+      <label>
+        هاتف الشركة
+        <input id="companyPhone" type="text" placeholder="+971 ..." />
+      </label>
+      <label>
+        إيميل الشركة
+        <input id="companyEmail" type="email" placeholder="sales@company.com" />
+      </label>
+      <label>
+        مكان الشركة
+        <input id="companyAddress" type="text" placeholder="دبي - الإمارات" />
+      </label>
+
+      <label>
+        اسم العميل
+        <input id="clientName" type="text" placeholder="اسم العميل" />
+      </label>
+      <label>
+        رقم العرض
+        <input id="quoteNo" type="text" value="Q-0001" />
+      </label>
+      <label>
+        تاريخ إنشاء العرض
+        <input id="quoteDate" type="date" />
+      </label>
+      <label>
+        العملة
+        <select id="currency">
+          <option value="AED" selected>AED</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </label>
+
+      <label class="span2">
+        الوجهة (اختر أكثر من وجهة)
+        <select id="destinations" multiple size="3">
+          <option>روسيا</option>
+          <option>التشيك</option>
+          <option>بولندا</option>
+          <option>اذربيجان</option>
+          <option>النمسا</option>
+          <option>اليونان</option>
+        </select>
+        <small class="muted">اضغط Ctrl (ويندوز) لاختيار أكثر من عنصر</small>
+      </label>
+
+      <label>
+        عدد الأشخاص
+        <select id="adults">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </label>
+      <label>
+        عدد الأطفال
+        <select id="children">
+          <option value="0" selected>0</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option>
+        </select>
+      </label>
+
+      <label>
+        تاريخ الذهاب
+        <input id="goDate" type="date" />
+      </label>
+      <label>
+        تاريخ العودة
+        <input id="backDate" type="date" />
+      </label>
+
+      <div class="infoBox span2">
+        <strong>المدة:</strong>
+        <span id="tripDurationText" class="muted">—</span>
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>هل العرض يشمل الطيران الدولي؟</h3>
+    <div class="toggleRow">
+      <label class="radio"><input type="radio" name="hasFlight" value="yes"> نعم</label>
+      <label class="radio"><input type="radio" name="hasFlight" value="no" checked> لا</label>
+    </div>
+
+    <div id="flightBox" class="subCard hidden">
+      <div class="formGrid">
+        <label>
+          نوع الرحلة
+          <select id="flightType">
+            <option>رحلات مباشرة</option>
+            <option>ترانزيت</option>
+          </select>
+        </label>
+        <label>
+          وزن الشنطة
+          <select id="baggage">
+            <option>20</option><option>23</option><option>25</option><option>30</option><option>40</option>
+          </select>
+        </label>
+
+        <label>
+          سعر الطيران (رقم)
+          <input id="flightPrice" type="number" min="0" value="0" />
+        </label>
+        <label>
+          ملاحظات الطيران
+          <input id="flightNote" type="text" placeholder="اختياري" />
+        </label>
+      </div>
+
+      <div class="flightTwo">
+        <div class="subCard2">
+          <h4>*رحلة الذهاب*</h4>
+          <div class="formGrid">
+            <label>من
+              <select id="fromCityGo">
+                <option>دبي</option><option>الشارقة</option><option>ابو ظبي</option>
+              </select>
+            </label>
+            <label>إلى
+              <select id="toCityGo">
+                <option>موسكو</option><option>براغ</option><option>كراكوف</option><option>باكو</option><option>فيينا</option><option>اثينا</option>
+              </select>
+            </label>
+            <label>إقلاع
+              <input id="goDepTime" type="time" value="00:00" />
+            </label>
+            <label>وصول
+              <input id="goArrTime" type="time" value="00:00" />
+            </label>
+          </div>
+        </div>
+
+        <div class="subCard2">
+          <h4>*رحلة العودة*</h4>
+          <div class="formGrid">
+            <label>من
+              <select id="fromCityBack">
+                <option>موسكو</option><option>براغ</option><option>كراكوف</option><option>باكو</option><option>فيينا</option><option>اثينا</option>
+              </select>
+            </label>
+            <label>إلى
+              <select id="toCityBack">
+                <option>دبي</option><option>الشارقة</option><option>ابو ظبي</option>
+              </select>
+            </label>
+            <label>إقلاع
+              <input id="backDepTime" type="time" value="00:00" />
+            </label>
+            <label>وصول
+              <input id="backArrTime" type="time" value="00:00" />
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>تفاصيل البرنامج (اختياري)</h3>
+    <label class="block">
+      المدينة/المدن (وصف سريع)
+      <textarea id="programDetails" rows="4" placeholder="مثال: روسيا (موسكو وسوتشي) - بولندا (زاكوباني وكراكوف) ..."></textarea>
+    </label>
+
+    <hr />
+
+    <h3>الفنادق بكل مدينة</h3>
+    <div id="hotelsContainer" class="stack"></div>
+
+    <hr />
+
+    <h3>تفاصيل الرحلات / المواصلات</h3>
+
+    <div class="subCard">
+      <div class="formGrid">
+        <label>
+          هل يوجد توصيل؟
+          <select id="hasTransfer">
+            <option value="no" selected>لا</option>
+            <option value="yes">نعم</option>
+          </select>
+        </label>
+        <label id="transferPriceWrap" class="hidden">
+          سعر التوصيل (رقم)
+          <input id="transferPrice" type="number" min="0" value="0" />
+        </label>
+
+        <label>
+          هل يوجد سيارة إيجار؟
+          <select id="hasCar">
+            <option value="no" selected>لا</option>
+            <option value="yes">نعم</option>
+          </select>
+        </label>
+        <label id="carTypeWrap" class="hidden">
+          نوع السيارة (كتابة)
+          <input id="carType" type="text" placeholder="مثال: Toyota Camry" />
+        </label>
+
+        <label id="carPriceWrap" class="hidden">
+          سعر سيارة الإيجار (رقم)
+          <input id="carPrice" type="number" min="0" value="0" />
+        </label>
+
+        <label id="hasToursWrap" class="hidden">
+          هل السيارة تشمل جولات؟
+          <select id="hasTours">
+            <option value="no" selected>لا</option>
+            <option value="yes">نعم</option>
+          </select>
+        </label>
+
+        <label id="toursCountWrap" class="hidden">
+          كم جولة؟
+          <input id="toursCount" type="number" min="0" value="0" />
+        </label>
+      </div>
+
+      <label class="block">
+        ملاحظات المواصلات
+        <textarea id="transportNotes" rows="3" placeholder="اختياري"></textarea>
+      </label>
+    </div>
+
+    <hr />
+
+    <h3>تفاصيل السعر</h3>
+    <div class="formGrid">
+      <label>
+        خصم (رقم)
+        <input id="discount" type="number" min="0" value="0" />
+      </label>
+      <label>
+        ضريبة (%)
+        <input id="tax" type="number" min="0" value="0" />
+      </label>
+    </div>
+
+    <label class="block">
+      ملاحظات عامة
+      <textarea id="notes" rows="4" placeholder="أي ملاحظات إضافية..."></textarea>
+    </label>
+
+    <label class="block">
+      الشروط والأحكام
+      <textarea id="terms" rows="5" placeholder="سياسة الإلغاء - صلاحية العرض - طريقة الدفع..."></textarea>
+    </label>
+  </section>
+
+  <!-- PREVIEW -->
+  <section class="card previewCard">
+    <div id="pdfArea" class="pdfArea">
+      <div class="pdfHeader">
+        <div>
+          <div class="pdfCompany" id="pCompanyName">شركة سياحة</div>
+          <div class="pdfMeta muted" id="pCompanyMeta">—</div>
+        </div>
+        <div class="pdfTitleBox">
+          <div class="pdfTitle">عرض سعر</div>
+          <div class="pdfSmall">
+            <div><span class="muted">رقم العرض:</span> <span id="pQuoteNo">Q-0001</span></div>
+            <div><span class="muted">التاريخ:</span> <span id="pQuoteDate">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pdfSection">
+        <div class="pdfRow">
+          <div><span class="muted">إلى:</span> <strong id="pClientName">—</strong></div>
+          <div><span class="muted">الوجهة:</span> <strong id="pDestinations">—</strong></div>
+        </div>
+        <div class="pdfRow">
+          <div><span class="muted">عدد الأشخاص:</span> <span id="pAdults">—</span></div>
+          <div><span class="muted">عدد الأطفال:</span> <span id="pChildren">—</span></div>
+        </div>
+        <div class="pdfRow">
+          <div><span class="muted">تاريخ الذهاب:</span> <span id="pGoDate">—</span></div>
+          <div><span class="muted">تاريخ العودة:</span> <span id="pBackDate">—</span></div>
+        </div>
+        <div class="pdfRow">
+          <div class="spanAll"><span class="muted">المدة:</span> <span id="pDuration">—</span></div>
+        </div>
+      </div>
+
+      <div class="pdfSection">
+        <h4>الطيران الدولي</h4>
+        <p id="pFlight" class="prewrap muted">—</p>
+      </div>
+
+      <div class="pdfSection">
+        <h4>تفاصيل البرنامج</h4>
+        <p id="pProgramDetails" class="prewrap muted">—</p>
+      </div>
+
+      <div class="pdfSection">
+        <h4>الفنادق بكل مدينة</h4>
+        <table class="pdfTable">
+          <thead>
+            <tr>
+              <th>المدينة</th>
+              <th>الفندق</th>
+              <th class="num">التقييم</th>
+              <th class="num">عدد الغرف</th>
+              <th>نوع الغرف</th>
+              <th>خطة الوجبات</th>
+              <th class="num">السعر</th>
+            </tr>
+          </thead>
+          <tbody id="pHotelsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pdfSection">
+        <h4>المواصلات / الرحلات</h4>
+        <p id="pTransport" class="prewrap muted">—</p>
+      </div>
+
+      <div class="pdfSection">
+        <h4>تفاصيل السعر</h4>
+        <div class="pdfTotals">
+          <div class="line"><span class="muted">سعر الطيران</span> <span id="pFlightPrice">0</span> <span id="pCurr1">AED</span></div>
+          <div class="line"><span class="muted">سعر الفنادق</span> <span id="pHotelsTotal">0</span> <span id="pCurr2">AED</span></div>
+          <div class="line"><span class="muted">سعر المواصلات</span> <span id="pTransportTotal">0</span> <span id="pCurr3">AED</span></div>
+          <div class="line"><span class="muted">الإجمالي قبل الخصم/الضريبة</span> <span id="pSubtotal">0</span> <span id="pCurr4">AED</span></div>
+          <div class="line"><span class="muted">الخصم</span> <span id="pDiscount">0</span> <span id="pCurr5">AED</span></div>
+          <div class="line"><span class="muted">الضريبة</span> <span id="pTaxAmount">0</span> <span id="pCurr6">AED</span></div>
+          <div class="grand"><span>الإجمالي النهائي</span> <span id="pGrand">0</span> <span id="pCurr7">AED</span></div>
+        </div>
+      </div>
+
+      <div class="pdfSection">
+        <h4>ملاحظات</h4>
+        <p id="pNotes" class="prewrap muted">—</p>
+      </div>
+
+      <div class="pdfSection">
+        <h4>الشروط والأحكام</h4>
+        <p id="pTerms" class="prewrap muted">—</p>
+      </div>
+
+      <div class="pdfFooter muted">
+        تم إنشاء هذا العرض إلكترونياً.
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Hotel Row Template -->
+<template id="hotelRowTpl">
+  <div class="hotelRow subCard">
+    <div class="rowHead">
+      <strong>مدينة / فندق</strong>
+      <button class="iconBtn danger btnRemoveHotel" type="button">حذف</button>
+    </div>
+
+    <div class="formGrid">
+      <label>
+        المدينة
+        <input class="hCity" type="text" placeholder="مثال: موسكو" />
+      </label>
+
+      <label>
+        الفندق
+        <input class="hHotel" type="text" placeholder="مثال: فندق اكوامارين" />
+        <small class="muted">روسيا (اقتراحات): اكوامارين / ارت كورت / اربات ستاز / ناشيونال / شقق انترمارك</small>
+      </label>
+
+      <label>
+        تقييم الفندق
+        <select class="hStars">
+          <option>*1</option><option>*2</option><option>*3</option><option selected>*4</option><option>*5</option>
+        </select>
+      </label>
+
+      <label>
+        عدد الغرف
+        <select class="hRooms">
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+        </select>
+      </label>
+
+      <label class="span2">
+        نوع الغرف
+        <select class="hRoomType">
+          <option>غرفة مفردة</option>
+          <option selected>غرفة مزدوجة</option>
+          <option>غرفة كلاسيك مزدوجة</option>
+          <option>غرفة سوبيريور مزدوجة</option>
+          <option>غرفة ديلوكس مزدوجة</option>
+          <option>غرفة ثلاثية</option>
+          <option>غرفة رباعية</option>
+          <option>شقة فندقية مكونة من غرفة نوم واحدة</option>
+          <option>شقة فندقية مكونة من غرفتين نوم</option>
+          <option>شقة فندقية مكونة من ثلاث غرف نوم</option>
+          <option>استوديو</option>
+          <option>استوديو مزدوج</option>
+          <option>استوديو ثلاثي</option>
+          <option>استوديو رباعي</option>
+        </select>
+      </label>
+
+      <label>
+        خطة الوجبات
+        <select class="hMeals">
+          <option>بدون افطار</option>
+          <option selected>بالافطار</option>
+          <option>افطار وعشاء</option>
+          <option>اقامة مشمولة كليا</option>
+        </select>
+      </label>
+
+      <label>
+        سعر الفندق (رقم)
+        <input class="hPrice" type="number" min="0" value="0" />
+      </label>
+    </div>
+  </div>
+</template>
+
+</body>
+</html>

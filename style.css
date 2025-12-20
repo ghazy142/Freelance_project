@@ -1,0 +1,244 @@
+:root{
+  --bg:#0b1220;
+  --card:#0f1a33;
+  --text:#e9eefc;
+  --muted:#a8b3d6;
+  --line:#263458;
+  --btn:#4a7dff;
+  --btn2:#203056;
+  --danger:#ff5a6b;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial;
+  background: linear-gradient(180deg, #0b1220, #060a12);
+  color:var(--text);
+}
+
+.topbar{
+  display:flex;
+  gap:16px;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 22px;
+  border-bottom:1px solid var(--line);
+  position:sticky;
+  top:0;
+  backdrop-filter: blur(10px);
+  background: rgba(11,18,32,.85);
+  z-index:10;
+}
+
+.brand{display:flex; gap:14px; align-items:center}
+.logoBox{
+  width:44px; height:44px;
+  border-radius:12px;
+  display:grid; place-items:center;
+  background: linear-gradient(135deg, #4a7dff, #8a5cff);
+  font-weight:900;
+}
+h1{margin:0; font-size:18px}
+h2{margin:0 0 10px 0}
+h3{margin:0 0 10px 0}
+h4{margin:0 0 8px 0}
+.muted{color:var(--muted)}
+
+.actions{display:flex; gap:10px; flex-wrap:wrap}
+
+.btn{
+  border:0;
+  padding:10px 14px;
+  border-radius:12px;
+  background: var(--btn);
+  color:white;
+  font-weight:800;
+  cursor:pointer;
+}
+.btn.secondary{
+  background: var(--btn2);
+  border:1px solid var(--line);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap:16px;
+  padding:16px;
+}
+
+.card{
+  background: rgba(15,26,51,.85);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+}
+
+.formGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+}
+
+label{display:flex; flex-direction:column; gap:6px; font-size:13px}
+
+input, textarea, select{
+  border-radius:12px;
+  border:1px solid var(--line);
+  padding:10px 12px;
+  background:#0b142c;
+  color:var(--text);
+  outline:none;
+}
+textarea{resize:vertical}
+.span2{grid-column:1 / -1}
+.block{margin-top:12px}
+hr{border:0; border-top:1px solid var(--line); margin:16px 0}
+
+.infoBox{
+  border:1px dashed var(--line);
+  border-radius:14px;
+  padding:12px;
+  background: rgba(11,20,44,.6);
+}
+
+.toggleRow{display:flex; gap:14px; margin:8px 0 0}
+.radio{display:flex; align-items:center; gap:8px}
+
+.subCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  background: rgba(11,20,44,.55);
+}
+.subCard2{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  background: rgba(11,20,44,.35);
+}
+
+.flightTwo{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px}
+.stack{display:flex; flex-direction:column; gap:12px}
+
+.hidden{display:none !important}
+
+.rowHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.iconBtn{
+  border:1px solid var(--line);
+  background:#0b142c;
+  color:var(--text);
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer;
+}
+.iconBtn.danger{
+  border-color: rgba(255,90,107,.6);
+  color: #ffd2d7;
+}
+.iconBtn.danger:hover{background: rgba(255,90,107,.12)}
+
+.previewCard{padding:10px}
+
+.pdfArea{
+  background:white;
+  color:#0c1220;
+  border-radius:12px;
+  padding:18px;
+}
+
+.pdfHeader{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:2px solid #e7eaf3;
+  padding-bottom:12px;
+  margin-bottom:12px;
+}
+.pdfCompany{font-size:20px; font-weight:900}
+.pdfTitleBox{text-align:start}
+.pdfTitle{font-weight:900; letter-spacing:1px}
+.pdfSmall{font-size:12px; margin-top:6px}
+
+.pdfSection{margin-top:14px}
+.pdfRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  font-size:13px;
+  margin:6px 0;
+}
+.spanAll{grid-column:1 / -1}
+
+.pdfTable{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px;
+  font-size:12px;
+}
+.pdfTable th, .pdfTable td{
+  border:1px solid #e7eaf3;
+  padding:7px;
+  vertical-align:top;
+}
+.pdfTable th{background:#f6f7fb; text-align:start}
+
+.num{text-align:end}
+.prewrap{white-space:pre-wrap}
+
+.pdfTotals{
+  margin-top:10px;
+  width:100%;
+  font-size:13px;
+}
+.pdfTotals .line{
+  display:flex; justify-content:space-between;
+  padding:6px 0;
+  border-bottom:1px dashed #d8dced;
+}
+.pdfTotals .grand{
+  display:flex; justify-content:space-between;
+  font-weight:900;
+  padding-top:10px;
+  font-size:14px;
+}
+
+.pdfFooter{
+  margin-top:18px;
+  border-top:1px solid #e7eaf3;
+  padding-top:10px;
+  font-size:12px;
+  text-align:center;
+}
+
+@media (max-width: 1100px){
+  .grid{grid-template-columns:1fr}
+  .flightTwo{grid-template-columns:1fr}
+}
+@media print {
+  /* نخفي الفورم والـ header ونطبع الـ Preview بس */
+  body { background: #fff !important; }
+  .topbar, .card:not(.previewCard) { display: none !important; }
+
+  /* نخلي الـ preview ياخد الصفحة كلها */
+  .grid { display: block !important; padding: 0 !important; }
+  .previewCard { border: none !important; box-shadow: none !important; padding: 0 !important; }
+  .pdfArea { border-radius: 0 !important; padding: 12mm !important; }
+
+  /* تحسين الطباعة */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  table, tr, td, th { page-break-inside: avoid !important; }
+  .pdfSection { break-inside: avoid; }
+  h4 { margin-top: 10px; }
+
+  /* A4 margins */
+  @page { size: A4; margin: 10mm; }
+}
