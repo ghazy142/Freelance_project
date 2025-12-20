@@ -542,3 +542,16 @@ hr{
     font-size: 11px;
   }
 }
+/* ===== Fix LTR content inside RTL ===== */
+.ltr{
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  text-align: left;
+}
+/* ===== Hide designer signature in PDF / Print ===== */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
