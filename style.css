@@ -520,3 +520,25 @@ hr{
     text-align: center;
   }
 }
+/* ===== Designer Signature ===== */
+.pdfDesigner{
+  margin-top: 18px;
+  padding: 10px 12px;
+  border-top: 1px dashed #e5e7eb;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+  color: #334155;
+}
+
+.pdfDesigner strong{
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* موبايل */
+@media (max-width: 768px){
+  .pdfDesigner{
+    font-size: 11px;
+  }
+}
