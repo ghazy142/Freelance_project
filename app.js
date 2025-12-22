@@ -4,7 +4,7 @@ const state = {
   hotels: [],
   destinations: [], // selected destination names (strings)
   carImageData: null,
-  airports: [] // { code, name, city, country, label }
+  airports: [] // { iata, name, city, country }
 };
 
 /* =========================
@@ -254,15 +254,9 @@ function normalizeAirportLabel(a) {
   const name = (a.name || "").trim();
   const city = (a.city || "").trim();
   const country = (a.country || "").trim();
-  const bits = [
-    code ? code : "",
-    name ? name : "",
-    city ? city : "",
-    country ? country : ""
-  ].filter(Boolean);
 
-  // Example: "DXB — Dubai International Airport (Dubai, United Arab Emirates)"
-  if (!bits.length) return null;
+  const hasAny = code || name || city || country;
+  if (!hasAny) return null;
 
   const head = code ? `${code} — ${name || city || "Airport"}` : name || city || "Airport";
   const tailParts = [city, country].filter(Boolean);
@@ -271,12 +265,7 @@ function normalizeAirportLabel(a) {
 }
 
 async function fetchAirports() {
-  // IMPORTANT:
-  // You can replace this source later with your own local JSON for offline.
-  // This public dataset is commonly used: datasets of "airports.json" with iata/name/city/country.
-  // If it fails, we fallback to minimal list so the page still works.
   const candidates = [
-    // v1: a lightweight airports list (iata, name, city, country)
     "https://raw.githubusercontent.com/mwgg/Airports/master/airports.json"
   ];
 
@@ -287,11 +276,7 @@ async function fetchAirports() {
 
       const data = await res.json();
 
-      // mwgg/Airports is keyed by ICAO, contains iata/name/city/country
-      const arr = Array.isArray(data)
-        ? data
-        : Object.values(data || {});
-
+      const arr = Array.isArray(data) ? data : Object.values(data || {});
       const cleaned = arr
         .map((x) => ({
           iata: (x.iata || "").trim().toUpperCase(),
@@ -299,16 +284,14 @@ async function fetchAirports() {
           city: (x.city || "").trim(),
           country: (x.country || "").trim()
         }))
-        .filter((x) => x.iata && x.name);
+        .filter((x) => x.iata && (x.name || x.city));
 
       if (cleaned.length) return cleaned;
     } catch (e) {
-      // try next candidate
       console.warn("Airports source failed:", e);
     }
   }
 
-  // Fallback (small set)
   return [
     { iata: "DXB", name: "Dubai International Airport", city: "Dubai", country: "United Arab Emirates" },
     { iata: "AUH", name: "Zayed International Airport", city: "Abu Dhabi", country: "United Arab Emirates" },
@@ -323,10 +306,7 @@ function renderAirportsDatalist(airports) {
   const dl = $("airportsList");
   if (!dl) return;
 
-  // Keep it reasonable: datalist with tens of thousands options is heavy.
-  // We will include all, but allow trimming if it becomes slow.
   dl.innerHTML = "";
-
   const frag = document.createDocumentFragment();
 
   airports.forEach((a) => {
@@ -343,9 +323,7 @@ function renderAirportsDatalist(airports) {
 
 async function setupAirportsDatalist() {
   const dl = $("airportsList");
-  const hasInputs =
-    $("fromCityGo") || $("toCityGo") || $("fromCityBack") || $("toCityBack");
-
+  const hasInputs = $("fromCityGo") || $("toCityGo") || $("fromCityBack") || $("toCityBack");
   if (!dl || !hasInputs) return;
 
   try {
@@ -476,15 +454,10 @@ function flightText() {
 function transportText() {
   const parts = [];
 
-  // Transfer
   const transferYes = $("hasTransfer")?.value === "yes";
-  if (transferYes) {
-    parts.push("✅ الاستقبال والتوديع من المطار بسيارة خاصة مع سائق خاص 🚘");
-  } else {
-    parts.push("لا يشمل العرض التوصيل من/إلى المطار.");
-  }
+  if (transferYes) parts.push("✅ الاستقبال والتوديع من المطار بسيارة خاصة مع سائق خاص 🚘");
+  else parts.push("لا يشمل العرض التوصيل من/إلى المطار.");
 
-  // Car rental (no driver) - independent
   const carYes = $("hasCar")?.value === "yes";
   if (carYes) {
     const type = $("carType")?.value?.trim() || "—";
@@ -493,31 +466,21 @@ function transportText() {
     parts.push("لا يشمل العرض سيارة إيجار.");
   }
 
-  // Tours with private car + driver (independent from car rental)
   const toursYes = $("hasTours")?.value === "yes";
   if (toursYes) {
     const n = Number($("toursCount")?.value || 0);
-    if (n > 0) {
-      parts.push(`✅ يشمل العرض (${n}) جولات بسيارة خاصة مع سائق خاص.`);
-    } else {
-      parts.push("✅ يشمل العرض جولات بسيارة خاصة مع سائق خاص.");
-    }
+    parts.push(n > 0 ? `✅ يشمل العرض (${n}) جولات بسيارة خاصة مع سائق خاص.` : "✅ يشمل العرض جولات بسيارة خاصة مع سائق خاص.");
   }
 
-  // Trains between cities
   const trainsYes = $("hasTrains")?.value === "yes";
-  if (trainsYes) {
-    parts.push("✅ العرض يشمل الانتقالات بين المدن بالقطارات.");
-  }
+  if (trainsYes) parts.push("✅ العرض يشمل الانتقالات بين المدن بالقطارات.");
 
-  // Intercity details
   const interYes = $("hasIntercity")?.value === "yes";
   if (interYes) {
     const txt = $("intercityDetails")?.value?.trim();
     parts.push(`✅ انتقالات داخلية: ${txt ? txt : "بين المدن/الفنادق"}`);
   }
 
-  // Sightseeing tours (existing)
   const sightseeingYes = $("hasSightseeing")?.value === "yes";
   if (sightseeingYes) {
     const count = Number($("sightseeingCount")?.value || 0);
@@ -573,6 +536,17 @@ function resolvePriceDisplayMode() {
 
   const people = getPeopleCount();
   return people > 1 ? "both" : "total";
+}
+
+/* =========================
+   Price Breakdown Visibility (NEW)
+   - controlled by <select id="showBreakdown">
+   - hides/shows #pBreakdownWrap in the preview
+========================= */
+function resolveBreakdownVisible() {
+  // default: show breakdown if control not present
+  const v = $("showBreakdown")?.value || "yes";
+  return v !== "no";
 }
 
 /* =========================
@@ -664,11 +638,16 @@ function renderAll() {
   const perPerson = people > 0 ? t.grand / people : 0;
   if ($("pPerPerson")) $("pPerPerson").textContent = money(perPerson);
 
+  // Price mode (total/perPerson/both/auto)
   const mode = resolvePriceDisplayMode();
   const perWrap = $("pPerPersonWrap");
   const grandWrap = $("pGrandWrap");
   if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
   if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
+
+  // ✅ NEW: Breakdown visibility (hide hotel/flight/transport lines together)
+  const breakdownWrap = $("pBreakdownWrap");
+  if (breakdownWrap) toggle(breakdownWrap, resolveBreakdownVisible());
 
   if ($("pNotes")) $("pNotes").textContent = $("notes")?.value?.trim() || "—";
 
@@ -723,7 +702,6 @@ function setupVisibility() {
     renderAll();
   });
 
-  // Car rental (independent)
   $("hasCar")?.addEventListener("change", () => {
     const yes = $("hasCar").value === "yes";
     toggle($("carTypeWrap"), yes);
@@ -742,7 +720,6 @@ function setupVisibility() {
     renderAll();
   });
 
-  // Tours (independent from car)
   $("hasTours")?.addEventListener("change", () => {
     const yes = $("hasTours").value === "yes";
     toggle($("toursCountWrap"), yes);
@@ -750,7 +727,6 @@ function setupVisibility() {
     renderAll();
   });
 
-  // Trains
   $("hasTrains")?.addEventListener("change", () => {
     renderAll();
   });
@@ -776,6 +752,9 @@ function setupVisibility() {
     }
     renderAll();
   });
+
+  // ✅ NEW: showBreakdown toggle (breakdown lines)
+  $("showBreakdown")?.addEventListener("change", renderAll);
 }
 
 function bindGeneralInputs() {
@@ -788,7 +767,7 @@ function bindGeneralInputs() {
     "quoteNo",
     "quoteDate",
     "currency",
-    "destinations", // hidden select (synced)
+    "destinations",
     "adults",
     "children",
     "childrenAges",
@@ -802,7 +781,6 @@ function bindGeneralInputs() {
     "flightPrice",
     "flightNote",
 
-    // Airports text inputs
     "fromCityGo",
     "toCityGo",
     "fromCityBack",
@@ -812,6 +790,7 @@ function bindGeneralInputs() {
     "goArrTime",
     "backDepTime",
     "backArrTime",
+
     "hasTransfer",
     "transferPrice",
     "hasCar",
@@ -823,6 +802,8 @@ function bindGeneralInputs() {
     "hasIntercity",
     "intercityDetails",
     "transportNotes",
+
+    "showBreakdown", // ✅ NEW
     "priceDisplay",
     "discount",
     "tax",
@@ -840,7 +821,6 @@ function bindGeneralInputs() {
     el.addEventListener("change", renderAll);
   });
 
-  // ✅ Car image listener
   $("carImage")?.addEventListener("change", () => {
     const file = $("carImage").files?.[0];
     if (!file) {
@@ -848,7 +828,6 @@ function bindGeneralInputs() {
       renderAll();
       return;
     }
-
     if (!file.type.startsWith("image/")) return;
 
     const reader = new FileReader();
@@ -888,17 +867,15 @@ function init() {
   bindGeneralInputs();
 
   $("btnAddHotel")?.addEventListener("click", () => addHotelRow());
-  $("btnDownload")?.addEventListener("click", downloadPDF); // مرة واحدة
+  $("btnDownload")?.addEventListener("click", downloadPDF);
 
   toggle($("flightBox"), hasFlight());
   toggle($("transferPriceWrap"), $("hasTransfer")?.value === "yes");
 
-  // Car-related
   toggle($("carTypeWrap"), $("hasCar")?.value === "yes");
   toggle($("carPriceWrap"), $("hasCar")?.value === "yes");
   toggle($("carImageWrap"), $("hasCar")?.value === "yes");
 
-  // Tours independent
   toggle($("toursCountWrap"), $("hasTours")?.value === "yes");
 
   if ($("airline")) toggle($("airlineOtherWrap"), $("airline").value === "أخرى");
@@ -911,8 +888,6 @@ function init() {
   }
 
   setupDestinationsDropdown();
-
-  // ✅ Airports list (fills datalist #airportsList)
   setupAirportsDatalist();
 
   renderAll();

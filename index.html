@@ -372,6 +372,15 @@
         <input id="tax" type="number" min="0" value="0" />
       </label>
 
+      <!-- ✅ NEW: إظهار/إخفاء تفاصيل الأسعار -->
+      <label class="span2">
+        إظهار تفاصيل الأسعار (الطيران/الفنادق/المواصلات... إلخ)؟
+        <select id="showBreakdown">
+          <option value="yes" selected>نعم</option>
+          <option value="no">لا (اعرض الإجمالي وسعر الشخص فقط)</option>
+        </select>
+      </label>
+
       <label class="span2">
         عرض السعر
         <select id="priceDisplay">
@@ -483,12 +492,16 @@
       <div class="pdfSection">
         <h4>تفاصيل السعر</h4>
         <div class="pdfTotals">
-          <div class="line"><span class="muted">سعر الطيران</span> <span id="pFlightPrice">0</span> <span id="pCurr1">AED</span></div>
-          <div class="line"><span class="muted">سعر الفنادق</span> <span id="pHotelsTotal">0</span> <span id="pCurr2">AED</span></div>
-          <div class="line"><span class="muted">سعر المواصلات</span> <span id="pTransportTotal">0</span> <span id="pCurr3">AED</span></div>
-          <div class="line"><span class="muted">الإجمالي قبل الخصم/الضريبة</span> <span id="pSubtotal">0</span> <span id="pCurr4">AED</span></div>
-          <div class="line"><span class="muted">الخصم</span> <span id="pDiscount">0</span> <span id="pCurr5">AED</span></div>
-          <div class="line"><span class="muted">الضريبة</span> <span id="pTaxAmount">0</span> <span id="pCurr6">AED</span></div>
+
+          <!-- ✅ NEW: Wrapper لتفاصيل الأسعار عشان نقدر نخفيها -->
+          <div id="pBreakdownWrap">
+            <div class="line"><span class="muted">سعر الطيران</span> <span id="pFlightPrice">0</span> <span id="pCurr1">AED</span></div>
+            <div class="line"><span class="muted">سعر الفنادق</span> <span id="pHotelsTotal">0</span> <span id="pCurr2">AED</span></div>
+            <div class="line"><span class="muted">سعر المواصلات</span> <span id="pTransportTotal">0</span> <span id="pCurr3">AED</span></div>
+            <div class="line"><span class="muted">الإجمالي قبل الخصم/الضريبة</span> <span id="pSubtotal">0</span> <span id="pCurr4">AED</span></div>
+            <div class="line"><span class="muted">الخصم</span> <span id="pDiscount">0</span> <span id="pCurr5">AED</span></div>
+            <div class="line"><span class="muted">الضريبة</span> <span id="pTaxAmount">0</span> <span id="pCurr6">AED</span></div>
+          </div>
 
           <div class="line" id="pPerPersonWrap">
             <span class="muted">سعر الشخص</span>
@@ -627,7 +640,6 @@
     </div>
   </div>
 </template>
-
 
 <footer class="siteCredit">
   <span>Designed & Developed by</span>
