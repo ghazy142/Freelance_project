@@ -2,7 +2,8 @@ const $ = (id) => document.getElementById(id);
 
 const state = {
   hotels: [],
-  destinations: [] // selected destination names (strings)
+  destinations: [], // selected destination names (strings)
+  carImageData: null
 };
 
 /* =========================
@@ -37,7 +38,6 @@ function calcDuration() {
   const backD = new Date(back + "T00:00:00");
   const diffMs = backD - goD;
 
-  // ✅ تحسين: لو تاريخ العودة قبل/يساوي الذهاب
   if (diffMs <= 0) {
     return { nights: 0, days: 0, text: "⚠️ تاريخ العودة غير صحيح" };
   }
@@ -61,10 +61,6 @@ function toggle(el, show) {
 /* =========================
    Destinations (Bootstrap dropdown + search + checkboxes)
 ========================= */
-
-/**
- * Escape for HTML (to prevent issues)
- */
 function escapeHtml(str) {
   return String(str)
     .replaceAll("&", "&amp;")
@@ -74,10 +70,6 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-/**
- * Fetch all countries from RestCountries and return array:
- * [{ en: "Singapore", ar: "سنغافورة" }, ...]
- */
 async function fetchCountries() {
   const url = "https://restcountries.com/v3.1/all?fields=name,translations";
   const res = await fetch(url);
@@ -87,7 +79,7 @@ async function fetchCountries() {
   const list = data
     .map((c) => {
       const en = c?.name?.common?.trim();
-      const ar = c?.translations?.ara?.common?.trim(); // Arabic translation if available
+      const ar = c?.translations?.ara?.common?.trim();
       return { en: en || "", ar: ar || "" };
     })
     .filter((x) => x.en)
@@ -96,9 +88,6 @@ async function fetchCountries() {
   return list;
 }
 
-/**
- * Keep hidden <select multiple id="destinations"> synced with state.destinations
- */
 function syncDestinationsToSelect() {
   const sel = $("destinations");
   if (!sel) return;
@@ -112,15 +101,11 @@ function syncDestinationsToSelect() {
     sel.appendChild(opt);
   });
 
-  // trigger change in case any listener expects it
   sel.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
-/**
- * Update dropdown button text to show selected countries
- */
 function updateDestButtonText() {
-  const btn = $("destinationsBtn"); // ✅ FIX ID
+  const btn = $("destinationsBtn");
   if (!btn) return;
 
   if (!state.destinations.length) {
@@ -133,11 +118,8 @@ function updateDestButtonText() {
   btn.textContent = shown + more;
 }
 
-/**
- * Build dropdown checkbox list
- */
 function renderDestList(countries, filterText = "") {
-  const listEl = $("destinationsList"); // ✅ FIX ID
+  const listEl = $("destinationsList");
   if (!listEl) return;
 
   const q = (filterText || "").trim().toLowerCase();
@@ -177,7 +159,6 @@ function renderDestList(countries, filterText = "") {
     })
     .join("");
 
-  // bind checkbox events
   listEl.querySelectorAll(".destCb").forEach((cb) => {
     cb.addEventListener("change", () => {
       const label = cb.getAttribute("data-label") || "";
@@ -196,9 +177,6 @@ function renderDestList(countries, filterText = "") {
   });
 }
 
-/**
- * Select all / Clear all helpers
- */
 function selectAllDestinations(countries) {
   state.destinations = countries.map((c) => c.ar || c.en);
   syncDestinationsToSelect();
@@ -212,17 +190,12 @@ function clearDestinations() {
   updateDestButtonText();
   renderAll();
 
-  // also uncheck visible checkboxes
-  const listEl = $("destinationsList"); // ✅ FIX ID
+  const listEl = $("destinationsList");
   if (listEl) {
     listEl.querySelectorAll(".destCb").forEach((cb) => (cb.checked = false));
   }
 }
 
-/**
- * If user had old destinations options selected (from previous build),
- * import them into state.destinations once.
- */
 function importDestinationsFromSelectOnce() {
   const sel = $("destinations");
   if (!sel) return;
@@ -235,45 +208,34 @@ function importDestinationsFromSelectOnce() {
   }
 }
 
-/**
- * Setup destinations dropdown
- */
 async function setupDestinationsDropdown() {
-  const listEl = $("destinationsList"); // ✅ FIX ID
-  const searchEl = $("destinationsSearch"); // ✅ FIX ID
-  const btnSelectAll = $("btnSelectAllDestinations"); // ✅ FIX ID
-  const btnClear = $("btnClearDestinations"); // ✅ FIX ID
+  const listEl = $("destinationsList");
+  const searchEl = $("destinationsSearch");
+  const btnSelectAll = $("btnSelectAllDestinations");
+  const btnClear = $("btnClearDestinations");
 
-  // If HTML doesn't contain the new UI, skip safely
   if (!listEl || !searchEl) return;
 
   try {
     const countries = await fetchCountries();
 
-    // import old selected values (if any) once
     importDestinationsFromSelectOnce();
-
-    // initial render
     renderDestList(countries, "");
 
-    // search
     searchEl.addEventListener("input", () => {
       renderDestList(countries, searchEl.value);
     });
 
-    // select all
     btnSelectAll?.addEventListener("click", () => {
       selectAllDestinations(countries);
       renderDestList(countries, searchEl.value);
     });
 
-    // clear
     btnClear?.addEventListener("click", () => {
       clearDestinations();
       renderDestList(countries, searchEl.value);
     });
 
-    // update button label
     updateDestButtonText();
   } catch (e) {
     listEl.innerHTML = `<div class="muted p-2">تعذر تحميل الدول. تأكد من الإنترنت أو جرّب لاحقًا.</div>`;
@@ -395,11 +357,12 @@ function flightText() {
 }
 
 /* =========================
-   Transport + Intercity
+   Transport + Intercity + Tours (independent) + Trains
 ========================= */
 function transportText() {
   const parts = [];
 
+  // Transfer
   const transferYes = $("hasTransfer")?.value === "yes";
   if (transferYes) {
     parts.push("✅ الاستقبال والتوديع من المطار بسيارة خاصة مع سائق خاص 🚘");
@@ -407,36 +370,48 @@ function transportText() {
     parts.push("لا يشمل العرض التوصيل من/إلى المطار.");
   }
 
+  // Car rental (no driver) - independent
   const carYes = $("hasCar")?.value === "yes";
   if (carYes) {
     const type = $("carType")?.value?.trim() || "—";
-    parts.push(`✅ يشمل العرض سيارة إيجار طوال مدة الرحلة (النوع: ${type}).`);
-
-    const toursYes = $("hasTours")?.value === "yes";
-    if (toursYes) {
-      const n = Number($("toursCount")?.value || 0);
-      parts.push(`✅ يشمل العرض (${n}) جولات يومية من 8 إلى 9 ساعات بسيارة خاصة مع سائق خاص.`);
-    }
+    parts.push(`✅ يشمل العرض سيارة إيجار طوال مدة الرحلة (بدون سائق) (النوع: ${type}).`);
   } else {
-    if ($("hasTransfer")?.value !== "yes") {
     parts.push("لا يشمل العرض سيارة إيجار.");
   }
+
+  // Tours with private car + driver (independent from car rental)
+  const toursYes = $("hasTours")?.value === "yes";
+  if (toursYes) {
+    const n = Number($("toursCount")?.value || 0);
+    if (n > 0) {
+      parts.push(`✅ يشمل العرض (${n}) جولات بسيارة خاصة مع سائق خاص.`);
+    } else {
+      parts.push("✅ يشمل العرض جولات بسيارة خاصة مع سائق خاص.");
+    }
   }
 
+  // Trains between cities
+  const trainsYes = $("hasTrains")?.value === "yes";
+  if (trainsYes) {
+    parts.push("✅ العرض يشمل الانتقالات بين المدن بالقطارات.");
+  }
+
+  // Intercity details
   const interYes = $("hasIntercity")?.value === "yes";
   if (interYes) {
     const txt = $("intercityDetails")?.value?.trim();
     parts.push(`✅ انتقالات داخلية: ${txt ? txt : "بين المدن/الفنادق"}`);
   }
 
-  const note = $("transportNotes")?.value?.trim();
-  if (note) parts.push(`ملاحظات: ${note}`);
-
+  // Sightseeing tours (existing)
   const sightseeingYes = $("hasSightseeing")?.value === "yes";
   if (sightseeingYes) {
-      const count = $("sightseeingCount")?.value || 0;
-      parts.push(`✅ يشمل العرض عدد (${count}) جولة بسيارة خاصة مع سائق خاص.`);
+    const count = Number($("sightseeingCount")?.value || 0);
+    parts.push(`✅ يشمل العرض عدد (${count}) جولة بسيارة خاصة مع سائق خاص.`);
   }
+
+  const note = $("transportNotes")?.value?.trim();
+  if (note) parts.push(`ملاحظات: ${note}`);
 
   return parts.join("\n");
 }
@@ -452,14 +427,13 @@ function totals() {
 
   const transferPrice = $("hasTransfer")?.value === "yes" ? Number($("transferPrice")?.value || 0) : 0;
   const carPrice = $("hasCar")?.value === "yes" ? Number($("carPrice")?.value || 0) : 0;
+
   const sightseeingYes = $("hasSightseeing")?.value === "yes";
   const sightseeingCount = sightseeingYes ? Number($("sightseeingCount")?.value || 0) : 0;
   const sightseeingPrice = sightseeingYes ? Number($("sightseeingPrice")?.value || 0) : 0;
-
   const sightseeingTotal = sightseeingCount * sightseeingPrice;
 
   const transportTotal = transferPrice + carPrice + sightseeingTotal;
-
   const subtotal = flightPrice + hotelsTotal + transportTotal;
 
   const discount = Number($("discount")?.value || 0);
@@ -530,7 +504,6 @@ function renderAll() {
 
   if ($("pClientName")) $("pClientName").textContent = $("clientName")?.value?.trim() || "—";
 
-  // destinations from hidden select (synced)
   const dests = getSelectedOptions($("destinations"));
   if ($("pDestinations")) $("pDestinations").textContent = dests.length ? dests.join(" - ") : "—";
 
@@ -564,6 +537,8 @@ function renderAll() {
   if ($("pCurr6")) $("pCurr6").textContent = t.curr;
   if ($("pCurr7")) $("pCurr7").textContent = t.curr;
 
+  if ($("pCurrPer")) $("pCurrPer").textContent = t.curr;
+
   if ($("pFlightPrice")) $("pFlightPrice").textContent = money(t.flightPrice);
   if ($("pHotelsTotal")) $("pHotelsTotal").textContent = money(t.hotelsTotal);
   if ($("pTransportTotal")) $("pTransportTotal").textContent = money(t.transportTotal);
@@ -576,7 +551,6 @@ function renderAll() {
   const perPerson = people > 0 ? t.grand / people : 0;
 
   if ($("pPerPerson")) $("pPerPerson").textContent = money(perPerson);
-  if ($("pCurrPer")) $("pCurrPer").textContent = t.curr;
 
   const mode = resolvePriceDisplayMode();
   const perWrap = $("pPerPersonWrap");
@@ -586,16 +560,28 @@ function renderAll() {
   if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
 
   if ($("pNotes")) $("pNotes").textContent = $("notes")?.value?.trim() || "—";
-if ($("pTerms")) {
-  const v = $("terms")?.value?.trim();
-  if (v && v.startsWith("http")) {
-    $("pTerms").textContent = "اضغط هنا لعرض الشروط والأحكام";
-    $("pTerms").href = v;
-  } else {
-    $("pTerms").textContent = v || "—";
-    $("pTerms").removeAttribute("href");
+
+  // Terms as link if it's a URL
+  if ($("pTerms")) {
+    const v = $("terms")?.value?.trim();
+    if (v && v.startsWith("http")) {
+      $("pTerms").textContent = "اضغط هنا لعرض الشروط والأحكام";
+      $("pTerms").href = v;
+    } else {
+      $("pTerms").textContent = v || "—";
+      $("pTerms").removeAttribute("href");
+    }
   }
-}
+
+  // Car image in preview (only when car rental is yes)
+  if ($("pCarImage") && $("pCarImageWrap")) {
+    if (state.carImageData && $("hasCar")?.value === "yes") {
+      $("pCarImage").src = state.carImageData;
+      toggle($("pCarImageWrap"), true);
+    } else {
+      toggle($("pCarImageWrap"), false);
+    }
+  }
 }
 
 /* =========================
@@ -607,7 +593,6 @@ function setupVisibility() {
       toggle($("flightBox"), hasFlight());
       renderAll();
     });
-    
   });
 
   const airlineEl = $("airline");
@@ -627,26 +612,35 @@ function setupVisibility() {
     renderAll();
   });
 
+  // Car rental (independent)
   $("hasCar")?.addEventListener("change", () => {
     const yes = $("hasCar").value === "yes";
     toggle($("carTypeWrap"), yes);
     toggle($("carPriceWrap"), yes);
-    toggle($("hasToursWrap"), yes);
+    toggle($("carImageWrap"), yes);
 
     if (!yes) {
       if ($("carType")) $("carType").value = "";
       if ($("carPrice")) $("carPrice").value = 0;
-      if ($("hasTours")) $("hasTours").value = "no";
-      if ($("toursCount")) $("toursCount").value = 0;
-      toggle($("toursCountWrap"), false);
+      if ($("carImage")) $("carImage").value = "";
+
+      state.carImageData = null;
+      if ($("pCarImage")) $("pCarImage").removeAttribute("src");
+      toggle($("pCarImageWrap"), false);
     }
     renderAll();
   });
 
+  // Tours (independent from car)
   $("hasTours")?.addEventListener("change", () => {
     const yes = $("hasTours").value === "yes";
     toggle($("toursCountWrap"), yes);
     if (!yes && $("toursCount")) $("toursCount").value = 0;
+    renderAll();
+  });
+
+  // Trains
+  $("hasTrains")?.addEventListener("change", () => {
     renderAll();
   });
 
@@ -661,17 +655,16 @@ function setupVisibility() {
   }
 
   $("hasSightseeing")?.addEventListener("change", () => {
-  const yes = $("hasSightseeing").value === "yes";
-  toggle($("sightseeingCountWrap"), yes);
-  toggle($("sightseeingPriceWrap"), yes);
+    const yes = $("hasSightseeing").value === "yes";
+    toggle($("sightseeingCountWrap"), yes);
+    toggle($("sightseeingPriceWrap"), yes);
 
-  if (!yes) {
-    $("sightseeingCount").value = 1;
-    $("sightseeingPrice").value = 0;
-  }
-  renderAll();
+    if (!yes) {
+      if ($("sightseeingCount")) $("sightseeingCount").value = 1;
+      if ($("sightseeingPrice")) $("sightseeingPrice").value = 0;
+    }
+    renderAll();
   });
-
 }
 
 function bindGeneralInputs() {
@@ -710,8 +703,10 @@ function bindGeneralInputs() {
     "hasCar",
     "carType",
     "carPrice",
+    "carImage",
     "hasTours",
     "toursCount",
+    "hasTrains",
     "hasIntercity",
     "intercityDetails",
     "transportNotes",
@@ -722,8 +717,7 @@ function bindGeneralInputs() {
     "terms",
     "hasSightseeing",
     "sightseeingCount",
-    "sightseeingPrice",
-
+    "sightseeingPrice"
   ];
 
   ids.forEach((id) => {
@@ -731,6 +725,25 @@ function bindGeneralInputs() {
     if (!el) return;
     el.addEventListener("input", renderAll);
     el.addEventListener("change", renderAll);
+  });
+
+  // ✅ Car image listener
+  $("carImage")?.addEventListener("change", () => {
+    const file = $("carImage").files?.[0];
+    if (!file) {
+      state.carImageData = null;
+      renderAll();
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.carImageData = reader.result;
+      renderAll();
+    };
+    reader.readAsDataURL(file);
   });
 }
 
@@ -748,7 +761,6 @@ function downloadPDF() {
 function init() {
   setTodayIfEmpty();
 
-  // default first hotel row
   addHotelRow({
     city: "موسكو",
     hotel: "فندق اكوامارين",
@@ -763,21 +775,29 @@ function init() {
   bindGeneralInputs();
 
   $("btnAddHotel")?.addEventListener("click", () => addHotelRow());
-  $("btnDownload")?.addEventListener("click", downloadPDF); // ✅ مربوط مرة واحدة فقط
+  $("btnDownload")?.addEventListener("click", downloadPDF); // مرة واحدة
 
   toggle($("flightBox"), hasFlight());
   toggle($("transferPriceWrap"), $("hasTransfer")?.value === "yes");
+
+  // Car-related
   toggle($("carTypeWrap"), $("hasCar")?.value === "yes");
   toggle($("carPriceWrap"), $("hasCar")?.value === "yes");
-  toggle($("hasToursWrap"), $("hasCar")?.value === "yes");
-  toggle($("toursCountWrap"), $("hasTours")?.value === "yes" && $("hasCar")?.value === "yes");
+  toggle($("carImageWrap"), $("hasCar")?.value === "yes");
+
+  // Tours independent
+  toggle($("toursCountWrap"), $("hasTours")?.value === "yes");
 
   if ($("airline")) toggle($("airlineOtherWrap"), $("airline").value === "أخرى");
   if ($("hasIntercity")) toggle($("intercityDetailsWrap"), $("hasIntercity").value === "yes");
 
-  // ✅ destinations dropdown setup (loads countries + binds search/check)
-  setupDestinationsDropdown();
+  if ($("hasSightseeing")) {
+    const yes = $("hasSightseeing").value === "yes";
+    toggle($("sightseeingCountWrap"), yes);
+    toggle($("sightseeingPriceWrap"), yes);
+  }
 
+  setupDestinationsDropdown();
   renderAll();
 }
 

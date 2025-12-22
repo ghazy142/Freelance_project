@@ -2,7 +2,10 @@
   --bg:#0b1220;
   --card:#0f1a33;
   --text:#ffffff;
-  --muted:#e9cbe6;
+
+  /* ✅ خلي muted متناسق مع .muted */
+  --muted:#6b7280;
+
   --line:#263458;
   --btn:#4a7dff;
   --btn2:#203056;
@@ -102,8 +105,7 @@ button.btn.btn-sm{ border-radius:12px; }
   border-radius:16px;
   padding:16px;
   box-shadow: var(--shadow);
-    color: white;
-
+  color: white;
 }
 
 /* ===== Form ===== */
@@ -241,7 +243,6 @@ hr{
   border-radius: 12px;
 }
 
-/* ✅ متوافق مع الـ JS الجديد */
 .destinationsItem{
   display:flex;
   align-items:center;
@@ -267,7 +268,6 @@ hr{
   line-height: 1.2;
 }
 
-/* ✅ سطر الإنجليزي تحت العربي */
 .destinationsEn{
   margin-inline-start:auto;
   font-size: 12px;
@@ -295,6 +295,7 @@ hr{
   padding-bottom:12px;
   margin-bottom:12px;
 }
+
 .pdfCompany{font-size:20px; font-weight:900}
 .pdfTitleBox{text-align:start}
 .pdfTitle{font-weight:900; letter-spacing:1px}
@@ -350,8 +351,6 @@ hr{
 }
 
 /* ===== إضافات خاصة بالتعديلات الجديدة ===== */
-
-/* ملخص الإقامة فوق جدول الفنادق */
 #pStaySummary{
   margin:6px 0 10px;
   padding:8px 10px;
@@ -362,7 +361,6 @@ hr{
   font-size:12px;
 }
 
-/* تنبيه ثابت */
 #pDisclaimer{
   margin:8px 0 0;
   padding:10px 12px;
@@ -374,12 +372,10 @@ hr{
   line-height:1.55;
 }
 
-/* ترتيب سطر سعر الشخص لو اتعرض */
 #pPerPersonWrap{
   font-weight:700;
 }
 
-/* Footer */
 .pdfFooter{
   margin-top:18px;
   border-top:1px solid #e7eaf3;
@@ -408,14 +404,17 @@ hr{
   .pdfSection { break-inside: avoid; }
   h4 { margin-top: 10px; }
 
+  /* ✅ منع كسر الصور/الوجو/صورة العربية في الطباعة */
+  img { page-break-inside: avoid !important; break-inside: avoid !important; }
+  .pdfCarImage { display:block; }
+
   @page { size: A4; margin: 10mm; }
 }
+
 /* =========================
    📱 Mobile Optimization
 ========================= */
 @media (max-width: 768px){
-
-  /* Header */
   .topbar{
     flex-direction: column;
     align-items: flex-start;
@@ -423,78 +422,34 @@ hr{
     padding: 12px 14px;
   }
 
-  .brand h1{
-    font-size: 16px;
-  }
+  .brand h1{ font-size: 16px; }
+  .brand p{ font-size: 12px; }
 
-  .brand p{
-    font-size: 12px;
-  }
+  .actions{ width: 100%; gap: 8px; }
+  .actions .btn{ width: 100%; justify-content: center; }
 
-  .actions{
-    width: 100%;
-    gap: 8px;
-  }
+  .grid{ grid-template-columns: 1fr; padding: 10px; }
 
-  .actions .btn{
-    width: 100%;
-    justify-content: center;
-  }
+  .formGrid{ grid-template-columns: 1fr; }
+  .span2{ grid-column: 1; }
 
-  /* Main grid */
-  .grid{
-    grid-template-columns: 1fr;
-    padding: 10px;
-  }
-
-  /* Forms */
-  .formGrid{
-    grid-template-columns: 1fr;
-  }
-
-  .span2{
-    grid-column: 1;
-  }
-
-  label{
-    font-size: 14px;
-  }
+  label{ font-size: 14px; }
 
   input, select, textarea{
     font-size: 14px;
     padding: 12px;
   }
 
-  /* Flight cards */
-  .flightTwo{
-    grid-template-columns: 1fr;
-  }
+  .flightTwo{ grid-template-columns: 1fr; }
 
-  /* Preview */
-  .previewCard{
-    padding: 6px;
-  }
+  .previewCard{ padding: 6px; }
+  .pdfArea{ padding: 14px; font-size: 13px; }
 
-  .pdfArea{
-    padding: 14px;
-    font-size: 13px;
-  }
+  .pdfCompany{ font-size: 16px; }
+  .pdfTitle{ font-size: 15px; }
 
-  .pdfCompany{
-    font-size: 16px;
-  }
+  .pdfRow{ grid-template-columns: 1fr; gap: 6px; }
 
-  .pdfTitle{
-    font-size: 15px;
-  }
-
-  /* PDF rows */
-  .pdfRow{
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  /* Tables → scroll instead of breaking */
   .pdfTable{
     display: block;
     overflow-x: auto;
@@ -502,17 +457,11 @@ hr{
   }
 
   .pdfTable th,
-  .pdfTable td{
-    font-size: 12px;
-  }
+  .pdfTable td{ font-size: 12px; }
 
-  /* Totals */
   .pdfTotals .line,
-  .pdfTotals .grand{
-    font-size: 13px;
-  }
+  .pdfTotals .grand{ font-size: 13px; }
 
-  /* Hotel rows */
   .rowHead{
     flex-direction: column;
     align-items: flex-start;
@@ -523,7 +472,15 @@ hr{
     width: 100%;
     text-align: center;
   }
+
+  /* ✅ تحسين هيدر الـ preview للموبايل */
+  .pdfHeader{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }
+
 /* ===== Designer Signature ===== */
 .pdfDesigner{
   margin-top: 18px;
@@ -540,12 +497,10 @@ hr{
   color: #0f172a;
 }
 
-/* موبايل */
 @media (max-width: 768px){
-  .pdfDesigner{
-    font-size: 11px;
-  }
+  .pdfDesigner{ font-size: 11px; }
 }
+
 /* ===== Fix LTR content inside RTL ===== */
 .ltr{
   direction: ltr;
@@ -553,12 +508,12 @@ hr{
   display: inline-block;
   text-align: left;
 }
+
 /* ===== Hide designer signature in PDF / Print ===== */
 @media print {
-  .no-print {
-    display: none !important;
-  }
+  .no-print { display: none !important; }
 }
+
 /* ===== PDF Logo & Company Info ===== */
 .pdfBrand{
   display: flex;
@@ -578,22 +533,14 @@ hr{
   line-height: 1.5;
 }
 
-.pdfPhone{
-  font-weight: 700;
-}
-
-
+.pdfPhone{ font-weight: 700; }
 
 .termsLink{
   color: #2563eb;
   text-decoration: underline;
   font-weight: 600;
 }
-
-.termsLink:hover{
-  color: #1e40af;
-}
-
+.termsLink:hover{ color: #1e40af; }
 
 /* ===== General Guidelines Section ===== */
 .pdfGuidelines{
@@ -605,4 +552,16 @@ hr{
   border-radius: 12px;
   padding: 12px 14px;
   margin-top: 8px;
+}
+
+/* ===== Car Image in PDF ===== */
+.pdfCarImage{
+  margin-top: 10px;
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  object-fit: contain;
+  background: #f8fafc;
+  padding: 6px;
 }

@@ -10,10 +10,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
-
-  <!-- PDF -->
-  <!-- <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script> -->
   <script defer src="app.js"></script>
 </head>
 
@@ -38,36 +34,28 @@
   <section class="card">
     <h2>بيانات العرض</h2>
 
-    <div class="formGrid">
-      <!-- <label>
-        اسم الشركة
-        <input id="companyName" type="text" value="شركة سياحة" />
-      </label> -->
-      <!-- <label>
-        هاتف الشركة
-        <input id="companyPhone" type="text" placeholder="+971 ..." />
-      </label> -->
-      <!-- <label>
-        إيميل الشركة
-        <input id="companyEmail" type="email" placeholder="sales@company.com" />
-      </label>
-      <label>
-        مكان الشركة
-        <input id="companyAddress" type="text" placeholder="دبي - الإمارات" />
-      </label> -->
+    <!-- ✅ حقول الشركة موجودة (حتى لو مش بتظهر) عشان JS/تطوير بعدين -->
+    <input id="companyName" type="hidden" value="شركة سياحة" />
+    <input id="companyPhone" type="hidden" value="" />
+    <input id="companyEmail" type="hidden" value="" />
+    <input id="companyAddress" type="hidden" value="" />
 
+    <div class="formGrid">
       <label>
         اسم العميل
         <input id="clientName" type="text" placeholder="اسم العميل" />
       </label>
+
       <label>
         رقم العرض
         <input id="quoteNo" type="text" value="Q-0001" />
       </label>
+
       <label>
         تاريخ إنشاء العرض
         <input id="quoteDate" type="date" />
       </label>
+
       <label>
         العملة
         <select id="currency">
@@ -81,7 +69,7 @@
       <label class="span2">
         الوجهة (اختر أكثر من وجهة)
 
-        <!-- Hidden select (JS هيملأه بكل دول العالم ويقرأ منه للـ Preview) -->
+        <!-- Hidden select (JS هيملأه) -->
         <select id="destinations" multiple class="hidden"></select>
 
         <div class="dropdown">
@@ -124,6 +112,7 @@
           <option value="10">10</option>
         </select>
       </label>
+
       <label>
         عدد الأطفال
         <select id="children">
@@ -143,6 +132,7 @@
         تاريخ الذهاب
         <input id="goDate" type="date" />
       </label>
+
       <label>
         تاريخ العودة
         <input id="backDate" type="date" />
@@ -167,7 +157,7 @@
         <label>
           نوع الرحلة
           <select id="flightType">
-            <option> مباشرة</option>
+            <option>مباشرة</option>
             <option>ترانزيت</option>
           </select>
         </label>
@@ -183,7 +173,6 @@
           </select>
         </label>
 
-        <!-- ✅ span2 عشان ما يلخبطش الـ grid -->
         <label id="airlineOtherWrap" class="hidden span2">
           اسم شركة الطيران (أخرى)
           <input id="airlineOther" type="text" placeholder="اكتب اسم الشركة" />
@@ -287,7 +276,7 @@
         </label>
 
         <label>
-          هل يوجد سيارة إيجار؟
+          هل يوجد سيارة إيجار؟ (بدون سائق)
           <select id="hasCar">
             <option value="no" selected>لا</option>
             <option value="yes">نعم</option>
@@ -299,13 +288,20 @@
           <input id="carType" type="text" placeholder="مثال: Toyota Camry" />
         </label>
 
+        <label id="carImageWrap" class="hidden span2">
+          صورة السيارة (اختياري)
+          <input id="carImage" type="file" accept="image/*" />
+          <small class="muted">يُفضل صورة واضحة (JPG أو PNG)</small>
+        </label>
+
         <label id="carPriceWrap" class="hidden">
           سعر سيارة الإيجار (رقم)
           <input id="carPrice" type="number" min="0" value="0" />
         </label>
 
-        <label id="hasToursWrap" class="hidden">
-          هل السيارة تشمل جولات؟
+        <!-- ✅ الجولات (مستقلة عن سيارة الإيجار) -->
+        <label>
+          هل يشمل العرض جولات بسيارة خاصة مع سائق؟
           <select id="hasTours">
             <option value="no" selected>لا</option>
             <option value="yes">نعم</option>
@@ -316,6 +312,16 @@
           كم جولة؟
           <input id="toursCount" type="number" min="0" value="0" />
         </label>
+
+        <!-- ✅ القطارات -->
+        <label>
+          هل العرض يشمل الانتقالات بالقطارات؟
+          <select id="hasTrains">
+            <option value="no" selected>لا</option>
+            <option value="yes">نعم</option>
+          </select>
+        </label>
+
         <label>
           هل يشمل العرض جولات سياحية؟
           <select id="hasSightseeing">
@@ -334,8 +340,6 @@
           <input id="sightseeingPrice" type="number" min="0" value="0" />
         </label>
 
-
-        <!-- ✅ نقلنا دول جوّا الـ formGrid عشان span2 تشتغل -->
         <label>
           هل يوجد انتقالات داخلية (بين المدن/الفنادق)؟
           <select id="hasIntercity">
@@ -397,13 +401,20 @@
     <div id="pdfArea" class="pdfArea">
       <div class="pdfHeader">
         <div class="pdfBrand">
-              <img src="./pics/logo.jpg" alt="Company Logo" class="pdfLogo">
+          <img src="./pics/logo.jpg" alt="Company Logo" class="pdfLogo">
         </div>
+
+        <div class="visually-hidden">
+          <span id="pCompanyName">—</span>
+          <span id="pCompanyMeta">—</span>
+        </div>
+
         <div class="pdfCompanyInfo">
           <div class="pdfPhone ltr"> +971588258316 📞</div>
           <div class="pdfAddress">📍 دبي - البرشا 1 - مبني سما - مكتب 303</div>
         </div>
-                <div class="pdfTitleBox">
+
+        <div class="pdfTitleBox">
           <div class="pdfTitle">عرض سعر</div>
           <div class="pdfSmall">
             <div><span class="muted">رقم العرض:</span> <span id="pQuoteNo">Q-0001</span></div>
@@ -465,6 +476,10 @@
       <div class="pdfSection">
         <h4>المواصلات / الرحلات</h4>
         <p id="pTransport" class="prewrap muted">—</p>
+
+        <div id="pCarImageWrap" class="hidden">
+          <img id="pCarImage" class="pdfCarImage" alt="صورة السيارة">
+        </div>
       </div>
 
       <div class="pdfSection">
@@ -496,14 +511,9 @@
 
       <div class="pdfSection">
         <h4>الشروط والأحكام</h4>
-          <p class="prewrap">
-            <a id="pTerms"
-              href="#"
-              target="_blank"
-              class="termsLink">
-              —
-            </a>
-          </p>      
+        <p class="prewrap">
+          <a id="pTerms" href="#" target="_blank" class="termsLink">—</a>
+        </p>
       </div>
 
       <div class="pdfSection">
@@ -511,42 +521,32 @@
           يرجى ملاحظة: الأسعار والاتاحة عرضه للتغيير حتى تأكيد الحجز.
         </p>
       </div>
+
       <div class="pdfDesigner no-print">
         <strong>Designed & Developed by</strong><br>
         Mohamed Ghazy<br>
         <span class="ltr">📞 +971 52 557 2803</span><br>
         <span class="ltr">✉️ ghazy0695@gmail.com</span>
       </div>
-      <div class="pdfSection">
-  <h4>إرشادات عامة</h4>
 
-  <p class="prewrap pdfGuidelines">
+      <div class="pdfSection">
+        <h4>إرشادات عامة</h4>
+        <p class="prewrap pdfGuidelines">
 إرشادات وتعليمات هامة قبل وأثناء الرحلة
 حرصًا على راحتكم وضمان تجربة سفر سلسة وممتعة، نود التنويه إلى الإرشادات التالية:
 
 • يُرجى التأكد من حجوزات الطيران (ذهاب وعودة) وحجوزات الفنادق قبل موعد السفر بوقت كافٍ.
-
 • عند الوصول إلى المطار، يُنصح بربط الهاتف بشبكة الإنترنت المجانية لتسهيل التواصل ومتابعة التعليمات.
-
 • يُشترط أن يكون جواز السفر ساري المفعول لمدة لا تقل عن 6 أشهر من تاريخ السفر، وإلا قد لا يُسمح بالصعود إلى الطائرة.
-
 • في حال حدوث أي تأخير في الرحلات أو تغيير في المواعيد، يرجى التواصل معنا أو مع ممثل خدمة عملائنا فورًا لمتابعتكم حتى الوصول وتقديم خدمة استقبال سلسة.
-
 • نرجو عدم التعامل مع أشخاص مجهولين في المطار أو خارجه، والالتزام بالتعامل فقط مع السائق أو المرشد المعتمد لتجنب أي عمليات نصب أو إزعاج.
-
 • المسافر مسؤول مسؤولية كاملة عن أمتعته ومقتنياته الشخصية في المطار والفندق وأثناء التنقلات.
-
 • يُنصح بالاحتفاظ بنسخ إلكترونية من الجواز والتأشيرة والتذاكر على الهاتف تحسبًا لأي طارئ.
-
 • يُفضل الوصول إلى المطار قبل موعد الإقلاع بـ 3 ساعات للرحلات الدولية و2 ساعة للداخلية.
-
 • الالتزام بوزن الأمتعة المسموح به حسب سياسة شركة الطيران لتجنب أي رسوم إضافية.
-
 • يُرجى إبلاغنا مسبقًا في حال وجود احتياجات خاصة أو حالات صحية لضمان توفير أفضل خدمة ممكنة.
-  </p>
-</div>
-
-
+        </p>
+      </div>
 
       <div class="pdfFooter muted">
         تم إنشاء هذا العرض إلكترونياً.
