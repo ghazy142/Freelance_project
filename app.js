@@ -432,6 +432,12 @@ function transportText() {
   const note = $("transportNotes")?.value?.trim();
   if (note) parts.push(`ملاحظات: ${note}`);
 
+  const sightseeingYes = $("hasSightseeing")?.value === "yes";
+  if (sightseeingYes) {
+      const count = $("sightseeingCount")?.value || 0;
+      parts.push(`✅ يشمل العرض عدد (${count}) جولة بسيارة خاصة مع سائق خاص.`);
+  }
+
   return parts.join("\n");
 }
 
@@ -446,7 +452,13 @@ function totals() {
 
   const transferPrice = $("hasTransfer")?.value === "yes" ? Number($("transferPrice")?.value || 0) : 0;
   const carPrice = $("hasCar")?.value === "yes" ? Number($("carPrice")?.value || 0) : 0;
-  const transportTotal = transferPrice + carPrice;
+  const sightseeingYes = $("hasSightseeing")?.value === "yes";
+  const sightseeingCount = sightseeingYes ? Number($("sightseeingCount")?.value || 0) : 0;
+  const sightseeingPrice = sightseeingYes ? Number($("sightseeingPrice")?.value || 0) : 0;
+
+  const sightseeingTotal = sightseeingCount * sightseeingPrice;
+
+  const transportTotal = transferPrice + carPrice + sightseeingTotal;
 
   const subtotal = flightPrice + hotelsTotal + transportTotal;
 
@@ -595,6 +607,7 @@ function setupVisibility() {
       toggle($("flightBox"), hasFlight());
       renderAll();
     });
+    
   });
 
   const airlineEl = $("airline");
@@ -646,6 +659,19 @@ function setupVisibility() {
       renderAll();
     });
   }
+
+  $("hasSightseeing")?.addEventListener("change", () => {
+  const yes = $("hasSightseeing").value === "yes";
+  toggle($("sightseeingCountWrap"), yes);
+  toggle($("sightseeingPriceWrap"), yes);
+
+  if (!yes) {
+    $("sightseeingCount").value = 1;
+    $("sightseeingPrice").value = 0;
+  }
+  renderAll();
+  });
+
 }
 
 function bindGeneralInputs() {
@@ -693,7 +719,11 @@ function bindGeneralInputs() {
     "discount",
     "tax",
     "notes",
-    "terms"
+    "terms",
+    "hasSightseeing",
+    "sightseeingCount",
+    "sightseeingPrice",
+
   ];
 
   ids.forEach((id) => {

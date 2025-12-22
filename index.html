@@ -39,22 +39,22 @@
     <h2>بيانات العرض</h2>
 
     <div class="formGrid">
-      <label>
+      <!-- <label>
         اسم الشركة
         <input id="companyName" type="text" value="شركة سياحة" />
-      </label>
-      <label>
+      </label> -->
+      <!-- <label>
         هاتف الشركة
         <input id="companyPhone" type="text" placeholder="+971 ..." />
-      </label>
-      <label>
+      </label> -->
+      <!-- <label>
         إيميل الشركة
         <input id="companyEmail" type="email" placeholder="sales@company.com" />
       </label>
       <label>
         مكان الشركة
         <input id="companyAddress" type="text" placeholder="دبي - الإمارات" />
-      </label>
+      </label> -->
 
       <label>
         اسم العميل
@@ -167,7 +167,7 @@
         <label>
           نوع الرحلة
           <select id="flightType">
-            <option>رحلات مباشرة</option>
+            <option> مباشرة</option>
             <option>ترانزيت</option>
           </select>
         </label>
@@ -316,6 +316,24 @@
           كم جولة؟
           <input id="toursCount" type="number" min="0" value="0" />
         </label>
+        <label>
+          هل يشمل العرض جولات سياحية؟
+          <select id="hasSightseeing">
+            <option value="no" selected>لا</option>
+            <option value="yes">نعم</option>
+          </select>
+        </label>
+
+        <label id="sightseeingCountWrap" class="hidden">
+          كم جولة؟
+          <input id="sightseeingCount" type="number" min="1" value="1" />
+        </label>
+
+        <label id="sightseeingPriceWrap" class="hidden">
+          سعر الجولة (رقم)
+          <input id="sightseeingPrice" type="number" min="0" value="0" />
+        </label>
+
 
         <!-- ✅ نقلنا دول جوّا الـ formGrid عشان span2 تشتغل -->
         <label>
