@@ -593,3 +593,16 @@ hr{
 .termsLink:hover{
   color: #1e40af;
 }
+
+
+/* ===== General Guidelines Section ===== */
+.pdfGuidelines{
+  font-size: 12px;
+  line-height: 1.8;
+  color: #374151;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 8px;
+}
