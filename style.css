@@ -56,8 +56,12 @@ h2{margin:0 0 10px 0}
 h3{margin:0 0 10px 0}
 h4{margin:0 0 8px 0}
 
-.muted{color:var(--muted)}
+.muted{  color: #6b7280;  }
 .actions{display:flex; gap:10px; flex-wrap:wrap}
+#pFlight{
+  color: #374151;
+  font-size: 13px;
+}
 
 /* زرار مشروعنا */
 .btn{
@@ -554,4 +558,38 @@ hr{
   .no-print {
     display: none !important;
   }
+}
+/* ===== PDF Logo & Company Info ===== */
+.pdfBrand{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pdfLogo{
+  height: 55px;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.pdfCompanyInfo{
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.pdfPhone{
+  font-weight: 700;
+}
+
+
+
+.termsLink{
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.termsLink:hover{
+  color: #1e40af;
 }

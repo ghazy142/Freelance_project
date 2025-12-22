@@ -418,7 +418,9 @@ function transportText() {
       parts.push(`✅ يشمل العرض (${n}) جولات يومية من 8 إلى 9 ساعات بسيارة خاصة مع سائق خاص.`);
     }
   } else {
+    if ($("hasTransfer")?.value !== "yes") {
     parts.push("لا يشمل العرض سيارة إيجار.");
+  }
   }
 
   const interYes = $("hasIntercity")?.value === "yes";
@@ -572,7 +574,16 @@ function renderAll() {
   if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
 
   if ($("pNotes")) $("pNotes").textContent = $("notes")?.value?.trim() || "—";
-  if ($("pTerms")) $("pTerms").textContent = $("terms")?.value?.trim() || "—";
+if ($("pTerms")) {
+  const v = $("terms")?.value?.trim();
+  if (v && v.startsWith("http")) {
+    $("pTerms").textContent = "اضغط هنا لعرض الشروط والأحكام";
+    $("pTerms").href = v;
+  } else {
+    $("pTerms").textContent = v || "—";
+    $("pTerms").removeAttribute("href");
+  }
+}
 }
 
 /* =========================
