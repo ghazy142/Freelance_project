@@ -3,7 +3,8 @@ const $ = (id) => document.getElementById(id);
 const state = {
   hotels: [],
   destinations: [], // selected destination names (strings)
-  carImageData: null
+  carImageData: null,
+  airports: [] // { code, name, city, country, label }
 };
 
 /* =========================
@@ -239,6 +240,119 @@ async function setupDestinationsDropdown() {
     updateDestButtonText();
   } catch (e) {
     listEl.innerHTML = `<div class="muted p-2">تعذر تحميل الدول. تأكد من الإنترنت أو جرّب لاحقًا.</div>`;
+    console.error(e);
+  }
+}
+
+/* =========================
+   Airports (World Airports -> datalist)
+   - Fills <datalist id="airportsList"></datalist>
+   - Inputs: fromCityGo,toCityGo,fromCityBack,toCityBack (as text inputs)
+========================= */
+function normalizeAirportLabel(a) {
+  const code = (a.iata || a.code || "").trim().toUpperCase();
+  const name = (a.name || "").trim();
+  const city = (a.city || "").trim();
+  const country = (a.country || "").trim();
+  const bits = [
+    code ? code : "",
+    name ? name : "",
+    city ? city : "",
+    country ? country : ""
+  ].filter(Boolean);
+
+  // Example: "DXB — Dubai International Airport (Dubai, United Arab Emirates)"
+  if (!bits.length) return null;
+
+  const head = code ? `${code} — ${name || city || "Airport"}` : name || city || "Airport";
+  const tailParts = [city, country].filter(Boolean);
+  const tail = tailParts.length ? ` (${tailParts.join(", ")})` : "";
+  return `${head}${tail}`;
+}
+
+async function fetchAirports() {
+  // IMPORTANT:
+  // You can replace this source later with your own local JSON for offline.
+  // This public dataset is commonly used: datasets of "airports.json" with iata/name/city/country.
+  // If it fails, we fallback to minimal list so the page still works.
+  const candidates = [
+    // v1: a lightweight airports list (iata, name, city, country)
+    "https://raw.githubusercontent.com/mwgg/Airports/master/airports.json"
+  ];
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { cache: "force-cache" });
+      if (!res.ok) continue;
+
+      const data = await res.json();
+
+      // mwgg/Airports is keyed by ICAO, contains iata/name/city/country
+      const arr = Array.isArray(data)
+        ? data
+        : Object.values(data || {});
+
+      const cleaned = arr
+        .map((x) => ({
+          iata: (x.iata || "").trim().toUpperCase(),
+          name: (x.name || "").trim(),
+          city: (x.city || "").trim(),
+          country: (x.country || "").trim()
+        }))
+        .filter((x) => x.iata && x.name);
+
+      if (cleaned.length) return cleaned;
+    } catch (e) {
+      // try next candidate
+      console.warn("Airports source failed:", e);
+    }
+  }
+
+  // Fallback (small set)
+  return [
+    { iata: "DXB", name: "Dubai International Airport", city: "Dubai", country: "United Arab Emirates" },
+    { iata: "AUH", name: "Zayed International Airport", city: "Abu Dhabi", country: "United Arab Emirates" },
+    { iata: "SHJ", name: "Sharjah International Airport", city: "Sharjah", country: "United Arab Emirates" },
+    { iata: "DOH", name: "Hamad International Airport", city: "Doha", country: "Qatar" },
+    { iata: "IST", name: "Istanbul Airport", city: "Istanbul", country: "Türkiye" },
+    { iata: "LHR", name: "Heathrow Airport", city: "London", country: "United Kingdom" }
+  ];
+}
+
+function renderAirportsDatalist(airports) {
+  const dl = $("airportsList");
+  if (!dl) return;
+
+  // Keep it reasonable: datalist with tens of thousands options is heavy.
+  // We will include all, but allow trimming if it becomes slow.
+  dl.innerHTML = "";
+
+  const frag = document.createDocumentFragment();
+
+  airports.forEach((a) => {
+    const label = normalizeAirportLabel(a);
+    if (!label) return;
+
+    const opt = document.createElement("option");
+    opt.value = label;
+    frag.appendChild(opt);
+  });
+
+  dl.appendChild(frag);
+}
+
+async function setupAirportsDatalist() {
+  const dl = $("airportsList");
+  const hasInputs =
+    $("fromCityGo") || $("toCityGo") || $("fromCityBack") || $("toCityBack");
+
+  if (!dl || !hasInputs) return;
+
+  try {
+    const airports = await fetchAirports();
+    state.airports = airports;
+    renderAirportsDatalist(airports);
+  } catch (e) {
     console.error(e);
   }
 }
@@ -536,7 +650,6 @@ function renderAll() {
   if ($("pCurr5")) $("pCurr5").textContent = t.curr;
   if ($("pCurr6")) $("pCurr6").textContent = t.curr;
   if ($("pCurr7")) $("pCurr7").textContent = t.curr;
-
   if ($("pCurrPer")) $("pCurrPer").textContent = t.curr;
 
   if ($("pFlightPrice")) $("pFlightPrice").textContent = money(t.flightPrice);
@@ -549,13 +662,11 @@ function renderAll() {
 
   const people = getPeopleCount();
   const perPerson = people > 0 ? t.grand / people : 0;
-
   if ($("pPerPerson")) $("pPerPerson").textContent = money(perPerson);
 
   const mode = resolvePriceDisplayMode();
   const perWrap = $("pPerPersonWrap");
   const grandWrap = $("pGrandWrap");
-
   if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
   if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
 
@@ -690,12 +801,15 @@ function bindGeneralInputs() {
     "airlineOther",
     "flightPrice",
     "flightNote",
+
+    // Airports text inputs
     "fromCityGo",
     "toCityGo",
-    "goDepTime",
-    "goArrTime",
     "fromCityBack",
     "toCityBack",
+
+    "goDepTime",
+    "goArrTime",
     "backDepTime",
     "backArrTime",
     "hasTransfer",
@@ -703,7 +817,6 @@ function bindGeneralInputs() {
     "hasCar",
     "carType",
     "carPrice",
-    "carImage",
     "hasTours",
     "toursCount",
     "hasTrains",
@@ -798,6 +911,10 @@ function init() {
   }
 
   setupDestinationsDropdown();
+
+  // ✅ Airports list (fills datalist #airportsList)
+  setupAirportsDatalist();
+
   renderAll();
 }
 

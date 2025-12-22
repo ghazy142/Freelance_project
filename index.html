@@ -200,16 +200,15 @@
         <div class="subCard2">
           <h4>*رحلة الذهاب*</h4>
           <div class="formGrid">
+            <!-- ✅ مطارات العالم: Input + datalist بدل select -->
             <label>من
-              <select id="fromCityGo">
-                <option>دبي</option><option>الشارقة</option><option>ابو ظبي</option>
-              </select>
+              <input id="fromCityGo" type="text" list="airportsList" placeholder="ابحث: DXB — Dubai International..." autocomplete="off" />
             </label>
+
             <label>إلى
-              <select id="toCityGo">
-                <option>موسكو</option><option>براغ</option><option>كراكوف</option><option>باكو</option><option>فيينا</option><option>اثينا</option>
-              </select>
+              <input id="toCityGo" type="text" list="airportsList" placeholder="ابحث: SIN — Singapore Changi..." autocomplete="off" />
             </label>
+
             <label>إقلاع
               <input id="goDepTime" type="time" value="00:00" />
             </label>
@@ -222,16 +221,15 @@
         <div class="subCard2">
           <h4>*رحلة العودة*</h4>
           <div class="formGrid">
+            <!-- ✅ مطارات العالم: Input + datalist بدل select -->
             <label>من
-              <select id="fromCityBack">
-                <option>موسكو</option><option>براغ</option><option>كراكوف</option><option>باكو</option><option>فيينا</option><option>اثينا</option>
-              </select>
+              <input id="fromCityBack" type="text" list="airportsList" placeholder="ابحث..." autocomplete="off" />
             </label>
+
             <label>إلى
-              <select id="toCityBack">
-                <option>دبي</option><option>الشارقة</option><option>ابو ظبي</option>
-              </select>
+              <input id="toCityBack" type="text" list="airportsList" placeholder="ابحث..." autocomplete="off" />
             </label>
+
             <label>إقلاع
               <input id="backDepTime" type="time" value="00:00" />
             </label>
@@ -554,6 +552,9 @@
     </div>
   </section>
 </main>
+
+<!-- ✅ Datalist: مطارات العالم (JS هيملأها تلقائيًا) -->
+<datalist id="airportsList"></datalist>
 
 <!-- Hotel Row Template -->
 <template id="hotelRowTpl">
