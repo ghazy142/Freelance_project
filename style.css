@@ -565,3 +565,42 @@ hr{
   background: #f8fafc;
   padding: 6px;
 }
+
+
+/* ===== Website Credit ===== */
+.siteCredit{
+  margin-top: 20px;
+  padding: 14px 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  border-top: 1px solid var(--line);
+}
+
+.siteCredit strong{
+  color: #e5e7eb;
+  font-weight: 700;
+}
+
+.siteCredit a{
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.siteCredit a:hover{
+  text-decoration: underline;
+}
+
+.siteCredit .sep{
+  margin: 0 6px;
+  opacity: .6;
+}
+
+/* 📱 Mobile */
+@media (max-width: 768px){
+  .siteCredit{
+    font-size: 11px;
+    line-height: 1.8;
+  }
+}
