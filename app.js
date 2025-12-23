@@ -5,7 +5,7 @@ const state = {
   destinations: [],
   carImageData: null,
   airports: [],
-  domesticFlights: [] // ✅ NEW
+  domesticFlights: []
 };
 
 /* =========================
@@ -17,18 +17,9 @@ function setTodayIfEmpty() {
   if ($("quoteDate") && !$("quoteDate").value) $("quoteDate").value = iso;
 }
 
-function getSelectedOptions(selectEl) {
-  return Array.from(selectEl?.selectedOptions || []).map((o) => o.value);
-}
-
 function money(n) {
   const x = Number(n || 0);
   return isFinite(x) ? x.toFixed(2) : "0.00";
-}
-
-function formatDate(iso) {
-  if (!iso) return "—";
-  return iso;
 }
 
 function toggle(el, show) {
@@ -73,12 +64,12 @@ function addDomesticFlight(prefill = {}) {
 function syncDomesticFlightsFromDOM() {
   const rows = Array.from(document.querySelectorAll(".domesticRow"));
   state.domesticFlights = rows.map((r) => ({
-    from: r.querySelector(".dfFrom")?.value?.trim() || "",
-    to: r.querySelector(".dfTo")?.value?.trim() || "",
+    from: r.querySelector(".dfFrom")?.value || "",
+    to: r.querySelector(".dfTo")?.value || "",
     date: r.querySelector(".dfDate")?.value || "",
-    airline: r.querySelector(".dfAirline")?.value?.trim() || "",
+    airline: r.querySelector(".dfAirline")?.value || "",
     price: Number(r.querySelector(".dfPrice")?.value || 0),
-    note: r.querySelector(".dfNote")?.value?.trim() || ""
+    note: r.querySelector(".dfNote")?.value || ""
   }));
 }
 
@@ -88,13 +79,35 @@ function domesticFlightsText() {
   return state.domesticFlights
     .map(
       (f, i) => `✈️ رحلة داخلية (${i + 1})
-من ${f.from || "—"} إلى ${f.to || "—"}
+من ${f.from} إلى ${f.to}
 التاريخ: ${f.date || "—"}
 شركة الطيران: ${f.airline || "—"}
-السعر: ${money(f.price)}
-${f.note ? `ملاحظة: ${f.note}` : ""}`
+السعر: ${money(f.price)}`
     )
     .join("\n\n");
+}
+
+/* =========================
+   Transport Text
+========================= */
+function transportText() {
+  const parts = [];
+
+  if ($("hasIntercity")?.value === "yes") {
+    const count = Number($("intercityCount")?.value || 0);
+    const price = Number($("intercityPrice")?.value || 0);
+    const total = count * price;
+
+    if (count > 0) {
+      parts.push(
+        `🚐 انتقالات داخلية (${count} انتقالة)
+سعر الانتقالة: ${money(price)}
+إجمالي: ${money(total)}`
+      );
+    }
+  }
+
+  return parts.join("\n\n") || "—";
 }
 
 /* =========================
@@ -110,21 +123,34 @@ function totals() {
 
   const hotelsTotal = state.hotels.reduce((s, h) => s + Number(h.price || 0), 0);
 
-  const transportTotal =
-    ($("hasTransfer")?.value === "yes" ? Number($("transferPrice")?.value || 0) : 0) +
-    ($("hasCar")?.value === "yes" ? Number($("carPrice")?.value || 0) : 0) +
-    ($("hasIntercity")?.value === "yes" ? Number($("intercityPrice")?.value || 0) : 0) +
-    ($("hasSightseeing")?.value === "yes"
+  const transferPrice =
+    $("hasTransfer")?.value === "yes" ? Number($("transferPrice")?.value || 0) : 0;
+
+  const carPrice =
+    $("hasCar")?.value === "yes" ? Number($("carPrice")?.value || 0) : 0;
+
+  const sightseeingTotal =
+    $("hasSightseeing")?.value === "yes"
       ? Number($("sightseeingCount")?.value || 0) *
         Number($("sightseeingPrice")?.value || 0)
-      : 0);
+      : 0;
+
+  const intercityTotal =
+    $("hasIntercity")?.value === "yes"
+      ? Number($("intercityCount")?.value || 0) *
+        Number($("intercityPrice")?.value || 0)
+      : 0;
 
   const domesticFlightsTotal = state.domesticFlights.reduce(
     (s, f) => s + Number(f.price || 0),
     0
   );
 
-  const subtotal = flightPrice + hotelsTotal + transportTotal + domesticFlightsTotal;
+  const transportTotal =
+    transferPrice + carPrice + sightseeingTotal + intercityTotal;
+
+  const subtotal =
+    flightPrice + hotelsTotal + transportTotal + domesticFlightsTotal;
 
   const discount = Number($("discount")?.value || 0);
   const afterDiscount = Math.max(subtotal - discount, 0);
@@ -149,10 +175,7 @@ function totals() {
 ========================= */
 function renderAll() {
   if ($("pDomesticFlights")) $("pDomesticFlights").textContent = domesticFlightsText();
-
-  if ($("pDomesticFlightsWrap")) {
-    toggle($("pDomesticFlightsWrap"), state.domesticFlights.length > 0);
-  }
+  if ($("pTransport")) $("pTransport").textContent = transportText();
 
   const t = totals();
 
@@ -171,11 +194,12 @@ function renderAll() {
 function setupVisibility() {
   document
     .querySelectorAll('input[name="hasDomesticFlights"]')
-    .forEach((r) => {
+    .forEach((r) =>
       r.addEventListener("change", () => {
         const yes =
           document.querySelector('input[name="hasDomesticFlights"]:checked')
             ?.value === "yes";
+
         toggle($("domesticFlightsBox"), yes);
 
         if (!yes) {
@@ -184,8 +208,22 @@ function setupVisibility() {
         }
 
         renderAll();
-      });
-    });
+      })
+    );
+
+  $("hasIntercity")?.addEventListener("change", () => {
+    const yes = $("hasIntercity").value === "yes";
+
+    toggle($("intercityCountWrap"), yes);
+    toggle($("intercityPriceWrap"), yes);
+
+    if (!yes) {
+      $("intercityCount").value = 0;
+      $("intercityPrice").value = 0;
+    }
+
+    renderAll();
+  });
 }
 
 /* =========================
