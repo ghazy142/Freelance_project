@@ -246,8 +246,6 @@ async function setupDestinationsDropdown() {
 
 /* =========================
    Airports (World Airports -> datalist)
-   - Fills <datalist id="airportsList"></datalist>
-   - Inputs: fromCityGo,toCityGo,fromCityBack,toCityBack (as text inputs)
 ========================= */
 function normalizeAirportLabel(a) {
   const code = (a.iata || a.code || "").trim().toUpperCase();
@@ -478,7 +476,9 @@ function transportText() {
   const interYes = $("hasIntercity")?.value === "yes";
   if (interYes) {
     const txt = $("intercityDetails")?.value?.trim();
-    parts.push(`✅ انتقالات داخلية: ${txt ? txt : "بين المدن/الفنادق"}`);
+    const price = Number($("intercityPrice")?.value || 0);
+    // ✅ NEW: عرض السعر في النص (اختياري)
+    parts.push(`✅ انتقالات داخلية: ${txt ? txt : "بين المدن/الفنادق"}${price ? ` (السعر: ${money(price)})` : ""}`);
   }
 
   const sightseeingYes = $("hasSightseeing")?.value === "yes";
@@ -510,7 +510,10 @@ function totals() {
   const sightseeingPrice = sightseeingYes ? Number($("sightseeingPrice")?.value || 0) : 0;
   const sightseeingTotal = sightseeingCount * sightseeingPrice;
 
-  const transportTotal = transferPrice + carPrice + sightseeingTotal;
+  // ✅ NEW: intercity price
+  const intercityPrice = $("hasIntercity")?.value === "yes" ? Number($("intercityPrice")?.value || 0) : 0;
+
+  const transportTotal = transferPrice + carPrice + sightseeingTotal + intercityPrice;
   const subtotal = flightPrice + hotelsTotal + transportTotal;
 
   const discount = Number($("discount")?.value || 0);
@@ -539,12 +542,9 @@ function resolvePriceDisplayMode() {
 }
 
 /* =========================
-   Price Breakdown Visibility (NEW)
-   - controlled by <select id="showBreakdown">
-   - hides/shows #pBreakdownWrap in the preview
+   Price Breakdown Visibility
 ========================= */
 function resolveBreakdownVisible() {
-  // default: show breakdown if control not present
   const v = $("showBreakdown")?.value || "yes";
   return v !== "no";
 }
@@ -639,24 +639,22 @@ function renderAll() {
   if ($("pPerPerson")) $("pPerPerson").textContent = money(perPerson);
 
   // Price mode (total/perPerson/both/auto)
+  const mode = resolvePriceDisplayMode();
+  const perWrap = $("pPerPersonWrap");
+  const grandWrap = $("pGrandWrap");
 
-    const mode = resolvePriceDisplayMode();
-    const perWrap = $("pPerPersonWrap");
-    const grandWrap = $("pGrandWrap");
+  if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
+  if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
 
-    if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
-    if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
-
-    // ✅ لو المستخدم اختار "الإجمالي فقط" → اخفي تفاصيل الأسعار كلها
-    const breakdownWrap = $("pBreakdownWrap");
-    if (breakdownWrap) {
-      if (mode === "total") {
-        toggle(breakdownWrap, false);
-      } else {
-        toggle(breakdownWrap, resolveBreakdownVisible());
-      }
+  // ✅ لو المستخدم اختار "الإجمالي فقط" → اخفي تفاصيل الأسعار كلها
+  const breakdownWrap = $("pBreakdownWrap");
+  if (breakdownWrap) {
+    if (mode === "total") {
+      toggle(breakdownWrap, false);
+    } else {
+      toggle(breakdownWrap, resolveBreakdownVisible());
     }
-
+  }
 
   if ($("pNotes")) $("pNotes").textContent = $("notes")?.value?.trim() || "—";
 
@@ -740,12 +738,17 @@ function setupVisibility() {
     renderAll();
   });
 
+  // ✅ UPDATED: Intercity -> show details + price
   const interEl = $("hasIntercity");
   if (interEl) {
     interEl.addEventListener("change", () => {
       const yes = interEl.value === "yes";
       toggle($("intercityDetailsWrap"), yes);
+      toggle($("intercityPriceWrap"), yes);
+
       if (!yes && $("intercityDetails")) $("intercityDetails").value = "";
+      if (!yes && $("intercityPrice")) $("intercityPrice").value = 0;
+
       renderAll();
     });
   }
@@ -762,7 +765,6 @@ function setupVisibility() {
     renderAll();
   });
 
-  // ✅ NEW: showBreakdown toggle (breakdown lines)
   $("showBreakdown")?.addEventListener("change", renderAll);
 }
 
@@ -810,9 +812,10 @@ function bindGeneralInputs() {
     "hasTrains",
     "hasIntercity",
     "intercityDetails",
+    "intercityPrice", // ✅ NEW
     "transportNotes",
 
-    "showBreakdown", // ✅ NEW
+    "showBreakdown",
     "priceDisplay",
     "discount",
     "tax",
@@ -888,7 +891,13 @@ function init() {
   toggle($("toursCountWrap"), $("hasTours")?.value === "yes");
 
   if ($("airline")) toggle($("airlineOtherWrap"), $("airline").value === "أخرى");
-  if ($("hasIntercity")) toggle($("intercityDetailsWrap"), $("hasIntercity").value === "yes");
+
+  // ✅ UPDATED: initial intercity visibility
+  if ($("hasIntercity")) {
+    const yes = $("hasIntercity").value === "yes";
+    toggle($("intercityDetailsWrap"), yes);
+    toggle($("intercityPriceWrap"), yes);
+  }
 
   if ($("hasSightseeing")) {
     const yes = $("hasSightseeing").value === "yes";

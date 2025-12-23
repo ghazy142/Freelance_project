@@ -200,7 +200,6 @@
         <div class="subCard2">
           <h4>*رحلة الذهاب*</h4>
           <div class="formGrid">
-            <!-- ✅ مطارات العالم: Input + datalist بدل select -->
             <label>من
               <input id="fromCityGo" type="text" list="airportsList" placeholder="ابحث: DXB — Dubai International..." autocomplete="off" />
             </label>
@@ -221,7 +220,6 @@
         <div class="subCard2">
           <h4>*رحلة العودة*</h4>
           <div class="formGrid">
-            <!-- ✅ مطارات العالم: Input + datalist بدل select -->
             <label>من
               <input id="fromCityBack" type="text" list="airportsList" placeholder="ابحث..." autocomplete="off" />
             </label>
@@ -344,6 +342,12 @@
             <option value="no" selected>لا</option>
             <option value="yes">نعم</option>
           </select>
+        </label>
+
+        <!-- ✅ NEW: سعر الانتقالات الداخلية -->
+        <label id="intercityPriceWrap" class="hidden">
+          سعر الانتقالات الداخلية (رقم)
+          <input id="intercityPrice" type="number" min="0" value="0" />
         </label>
 
         <label id="intercityDetailsWrap" class="hidden span2">
@@ -493,7 +497,6 @@
         <h4>تفاصيل السعر</h4>
         <div class="pdfTotals">
 
-          <!-- ✅ NEW: Wrapper لتفاصيل الأسعار عشان نقدر نخفيها -->
           <div id="pBreakdownWrap">
             <div class="line"><span class="muted">سعر الطيران</span> <span id="pFlightPrice">0</span> <span id="pCurr1">AED</span></div>
             <div class="line"><span class="muted">سعر الفنادق</span> <span id="pHotelsTotal">0</span> <span id="pCurr2">AED</span></div>
@@ -532,8 +535,6 @@
           يرجى ملاحظة: الأسعار والاتاحة عرضه للتغيير حتى تأكيد الحجز.
         </p>
       </div>
-
- 
 
       <div class="pdfSection">
         <h4>إرشادات عامة</h4>
