@@ -241,6 +241,24 @@
 
     <hr />
 
+    <!-- ✅ NEW: Domestic Flights -->
+    <h3>هل يوجد طيران داخلي (أكثر من رحلة)؟</h3>
+    <div class="toggleRow">
+      <label class="radio"><input type="radio" name="hasDomesticFlights" value="yes"> نعم</label>
+      <label class="radio"><input type="radio" name="hasDomesticFlights" value="no" checked> لا</label>
+    </div>
+
+    <div id="domesticFlightsBox" class="subCard hidden">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong>رحلات الطيران الداخلي</strong>
+        <button class="btn secondary" type="button" id="btnAddDomesticFlight">+ إضافة رحلة</button>
+      </div>
+
+      <div id="domesticFlightsContainer" class="stack"></div>
+    </div>
+
+    <hr />
+
     <h3>تفاصيل البرنامج (اختياري)</h3>
     <label class="block">
       المدينة/المدن (وصف سريع)
@@ -344,7 +362,7 @@
           </select>
         </label>
 
-        <!-- ✅ NEW: سعر الانتقالات الداخلية -->
+        <!-- ✅ سعر الانتقالات الداخلية -->
         <label id="intercityPriceWrap" class="hidden">
           سعر الانتقالات الداخلية (رقم)
           <input id="intercityPrice" type="number" min="0" value="0" />
@@ -376,7 +394,7 @@
         <input id="tax" type="number" min="0" value="0" />
       </label>
 
-      <!-- ✅ NEW: إظهار/إخفاء تفاصيل الأسعار -->
+      <!-- ✅ إظهار/إخفاء تفاصيل الأسعار -->
       <label class="span2">
         إظهار تفاصيل الأسعار (الطيران/الفنادق/المواصلات... إلخ)؟
         <select id="showBreakdown">
@@ -455,9 +473,15 @@
         </div>
       </div>
 
+      <!-- ✅ UPDATED: Flight section now includes domestic flights preview -->
       <div class="pdfSection">
         <h4>الطيران الدولي</h4>
         <p id="pFlight" class="prewrap muted">—</p>
+
+        <div id="pDomesticFlightsWrap" class="hidden">
+          <h4 style="margin-top:10px;">الطيران الداخلي</h4>
+          <p id="pDomesticFlights" class="prewrap muted">—</p>
+        </div>
       </div>
 
       <div class="pdfSection">
@@ -496,7 +520,6 @@
       <div class="pdfSection">
         <h4>تفاصيل السعر</h4>
         <div class="pdfTotals">
-
           <div id="pBreakdownWrap">
             <div class="line"><span class="muted">سعر الطيران</span> <span id="pFlightPrice">0</span> <span id="pCurr1">AED</span></div>
             <div class="line"><span class="muted">سعر الفنادق</span> <span id="pHotelsTotal">0</span> <span id="pCurr2">AED</span></div>
@@ -564,6 +587,42 @@
 
 <!-- ✅ Datalist: مطارات العالم (JS هيملأها تلقائيًا) -->
 <datalist id="airportsList"></datalist>
+
+<!-- Domestic Flight Row Template -->
+<template id="domesticFlightTpl">
+  <div class="subCard domesticRow">
+    <div class="rowHead">
+      <strong>رحلة داخلية</strong>
+      <button class="iconBtn danger btnRemoveDomestic" type="button">حذف</button>
+    </div>
+
+    <div class="formGrid">
+      <label>من
+        <input class="dfFrom" type="text" placeholder="مثال: موسكو" />
+      </label>
+
+      <label>إلى
+        <input class="dfTo" type="text" placeholder="مثال: سوتشي" />
+      </label>
+
+      <label>تاريخ الرحلة
+        <input class="dfDate" type="date" />
+      </label>
+
+      <label>شركة الطيران
+        <input class="dfAirline" type="text" placeholder="مثال: Aeroflot" />
+      </label>
+
+      <label>سعر الرحلة (رقم)
+        <input class="dfPrice" type="number" min="0" value="0" />
+      </label>
+
+      <label class="span2">ملاحظة (اختياري)
+        <input class="dfNote" type="text" placeholder="مثال: وزن 20 كجم / ترانزيت..." />
+      </label>
+    </div>
+  </div>
+</template>
 
 <!-- Hotel Row Template -->
 <template id="hotelRowTpl">
