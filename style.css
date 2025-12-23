@@ -288,13 +288,41 @@ hr{
 
 /* Header inside PDF */
 .pdfHeader{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  border-bottom:2px solid #e7eaf3;
-  padding-bottom:12px;
-  margin-bottom:12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 2px solid #e7eaf3;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
 }
+
+.pdfCol{
+  flex: 1;
+}
+
+.pdfRight{
+  text-align: right;
+}
+
+.pdfCenter{
+  text-align: center;
+}
+
+.pdfLeft{
+  text-align: left;
+}
+
+.pdfTitle{
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.pdfSmall{
+  font-size: 12px;
+  margin-top: 4px;
+}
+
 
 .pdfCompany{font-size:20px; font-weight:900}
 .pdfTitleBox{text-align:start}
@@ -602,5 +630,46 @@ hr{
   .siteCredit{
     font-size: 11px;
     line-height: 1.8;
+  }
+}
+
+
+/* ✅ PDF Header: force 3 columns in PRINT */
+@media print {
+  .pdfHeader{
+    display: grid !important;
+    grid-template-columns: 170px 1fr 260px !important; /* logo | title | info */
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  /* Right side (in RTL: start = RIGHT) -> logo */
+  .pdfBrand{
+    justify-self: start !important;
+    align-self: center !important;
+  }
+
+  /* Center -> title box */
+  .pdfTitleBox{
+    justify-self: center !important;
+    text-align: center !important;
+  }
+
+  /* Left side (in RTL: end = LEFT) -> company info */
+  .pdfCompanyInfo{
+    justify-self: end !important;
+    text-align: left !important;
+  }
+
+  /* Prevent wrapping stacked look */
+  .pdfCompanyInfo > div{
+    white-space: nowrap !important;
+  }
+
+  /* Make sure logo doesn't push layout */
+  .pdfLogo{
+    max-width: 170px !important;
+    height: 55px !important;
+    object-fit: contain !important;
   }
 }
