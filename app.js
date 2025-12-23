@@ -639,15 +639,24 @@ function renderAll() {
   if ($("pPerPerson")) $("pPerPerson").textContent = money(perPerson);
 
   // Price mode (total/perPerson/both/auto)
-  const mode = resolvePriceDisplayMode();
-  const perWrap = $("pPerPersonWrap");
-  const grandWrap = $("pGrandWrap");
-  if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
-  if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
 
-  // ✅ NEW: Breakdown visibility (hide hotel/flight/transport lines together)
-  const breakdownWrap = $("pBreakdownWrap");
-  if (breakdownWrap) toggle(breakdownWrap, resolveBreakdownVisible());
+    const mode = resolvePriceDisplayMode();
+    const perWrap = $("pPerPersonWrap");
+    const grandWrap = $("pGrandWrap");
+
+    if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
+    if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
+
+    // ✅ لو المستخدم اختار "الإجمالي فقط" → اخفي تفاصيل الأسعار كلها
+    const breakdownWrap = $("pBreakdownWrap");
+    if (breakdownWrap) {
+      if (mode === "total") {
+        toggle(breakdownWrap, false);
+      } else {
+        toggle(breakdownWrap, resolveBreakdownVisible());
+      }
+    }
+
 
   if ($("pNotes")) $("pNotes").textContent = $("notes")?.value?.trim() || "—";
 
