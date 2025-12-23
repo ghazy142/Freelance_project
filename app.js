@@ -28,7 +28,15 @@ function toggle(el, show) {
 }
 
 /* =========================
-   Domestic Flights (Multiple)
+   Price Display Logic
+========================= */
+function shouldHideHotelPrice() {
+  const priceDisplay = $("priceDisplay")?.value || "auto";
+  return priceDisplay === "perPerson" || priceDisplay === "total";
+}
+
+/* =========================
+   Domestic Flights
 ========================= */
 function addDomesticFlight(prefill = {}) {
   const tpl = $("domesticFlightTpl");
@@ -49,7 +57,7 @@ function addDomesticFlight(prefill = {}) {
     renderAll();
   });
 
-  node.querySelectorAll("input").forEach((inp) => {
+  node.querySelectorAll("input").forEach(inp => {
     inp.addEventListener("input", () => {
       syncDomesticFlightsFromDOM();
       renderAll();
@@ -63,7 +71,7 @@ function addDomesticFlight(prefill = {}) {
 
 function syncDomesticFlightsFromDOM() {
   const rows = Array.from(document.querySelectorAll(".domesticRow"));
-  state.domesticFlights = rows.map((r) => ({
+  state.domesticFlights = rows.map(r => ({
     from: r.querySelector(".dfFrom")?.value || "",
     to: r.querySelector(".dfTo")?.value || "",
     date: r.querySelector(".dfDate")?.value || "",
@@ -76,15 +84,13 @@ function syncDomesticFlightsFromDOM() {
 function domesticFlightsText() {
   if (!state.domesticFlights.length) return "—";
 
-  return state.domesticFlights
-    .map(
-      (f, i) => `✈️ رحلة داخلية (${i + 1})
+  return state.domesticFlights.map(
+    (f, i) => `✈️ رحلة داخلية (${i + 1})
 من ${f.from} إلى ${f.to}
 التاريخ: ${f.date || "—"}
 شركة الطيران: ${f.airline || "—"}
 السعر: ${money(f.price)}`
-    )
-    .join("\n\n");
+  ).join("\n\n");
 }
 
 /* =========================
@@ -96,13 +102,11 @@ function transportText() {
   if ($("hasIntercity")?.value === "yes") {
     const count = Number($("intercityCount")?.value || 0);
     const price = Number($("intercityPrice")?.value || 0);
-    const total = count * price;
-
     if (count > 0) {
       parts.push(
         `🚐 انتقالات داخلية (${count} انتقالة)
 سعر الانتقالة: ${money(price)}
-إجمالي: ${money(total)}`
+إجمالي: ${money(count * price)}`
       );
     }
   }
@@ -186,6 +190,17 @@ function renderAll() {
   if ($("pDiscount")) $("pDiscount").textContent = money(t.discount);
   if ($("pTaxAmount")) $("pTaxAmount").textContent = money(t.taxAmount);
   if ($("pGrand")) $("pGrand").textContent = money(t.grand);
+
+  /* ✅ إخفاء سعر الفندق حسب اختيار السعر */
+  const hideHotelPrice = shouldHideHotelPrice();
+
+  // سطر سعر الفنادق في التوتال
+  toggle($("pHotelsTotal")?.closest(".line"), !hideHotelPrice);
+
+  // عمود السعر في جدول الفنادق
+  document.querySelectorAll(".hotelPriceCol").forEach(el => {
+    toggle(el, !hideHotelPrice);
+  });
 }
 
 /* =========================
@@ -194,7 +209,7 @@ function renderAll() {
 function setupVisibility() {
   document
     .querySelectorAll('input[name="hasDomesticFlights"]')
-    .forEach((r) =>
+    .forEach(r =>
       r.addEventListener("change", () => {
         const yes =
           document.querySelector('input[name="hasDomesticFlights"]:checked')
@@ -224,6 +239,8 @@ function setupVisibility() {
 
     renderAll();
   });
+
+  $("priceDisplay")?.addEventListener("change", renderAll);
 }
 
 /* =========================
