@@ -71,6 +71,46 @@ function fixEmptyHotelsColspan(showHotelPrice) {
   if (td) td.colSpan = showHotelPrice ? 7 : 6;
 }
 
+
+function renderIntercityPrices() {
+  const wrap = $("intercityPricesWrap");
+  const box = $("intercityPrices");
+  if (!box) return;
+
+  const yes = $("hasIntercity")?.value === "yes";
+  const n = yes ? Number($("intercityCount")?.value || 0) : 0;
+
+  // احتفظ بالقيم القديمة قبل ما نعيد الرسم
+  const prev = Array.from(box.querySelectorAll('input[data-ic-price]')).map(
+    (inp) => Number(inp.value || 0)
+  );
+
+  box.innerHTML = "";
+
+  if (!yes || n <= 0) return;
+
+  for (let i = 0; i < n; i++) {
+    const label = document.createElement("label");
+    label.innerHTML = `
+      سعر الانتقال ${i + 1}
+      <input data-ic-price type="number" min="0" value="${prev[i] ?? 0}" />
+    `;
+    const input = label.querySelector("input");
+    input.addEventListener("input", renderAll);
+    box.appendChild(label);
+  }
+}
+
+function getIntercityTotal() {
+  const box = $("intercityPrices");
+  if (!box) return 0;
+  return Array.from(box.querySelectorAll('input[data-ic-price]')).reduce(
+    (sum, inp) => sum + Number(inp.value || 0),
+    0
+  );
+}
+
+
 /* =========================
    Destinations (Bootstrap dropdown + search + checkboxes)
 ========================= */
@@ -489,9 +529,16 @@ function transportText() {
 
   const interYes = $("hasIntercity")?.value === "yes";
   if (interYes) {
+    const n = Number($("intercityCount")?.value || 0);
+    const total = getIntercityTotal();
+    const curr = $("currency")?.value || "AED";
     const txt = $("intercityDetails")?.value?.trim();
-    parts.push(`✅ انتقالات داخلية: ${txt ? txt : "بين المدن/الفنادق"}`);
+
+    parts.push(
+      `✅ انتقالات داخلية${n ? ` (${n})` : ""}: ${txt ? txt : "بين المدن/الفنادق"} — إجمالي ${money(total)} ${curr}`
+    );
   }
+
 
   const sightseeingYes = $("hasSightseeing")?.value === "yes";
   if (sightseeingYes) {
@@ -516,13 +563,15 @@ function totals() {
 
   const transferPrice = $("hasTransfer")?.value === "yes" ? Number($("transferPrice")?.value || 0) : 0;
   const carPrice = $("hasCar")?.value === "yes" ? Number($("carPrice")?.value || 0) : 0;
+  const intercityTotal = $("hasIntercity")?.value === "yes" ? getIntercityTotal() : 0; //new
+
 
   const sightseeingYes = $("hasSightseeing")?.value === "yes";
   const sightseeingCount = sightseeingYes ? Number($("sightseeingCount")?.value || 0) : 0;
   const sightseeingPrice = sightseeingYes ? Number($("sightseeingPrice")?.value || 0) : 0;
   const sightseeingTotal = sightseeingCount * sightseeingPrice;
 
-  const transportTotal = transferPrice + carPrice + sightseeingTotal;
+  const transportTotal = transferPrice + carPrice + sightseeingTotal + intercityTotal;
   const subtotal = flightPrice + hotelsTotal + transportTotal;
 
   const discount = Number($("discount")?.value || 0);
@@ -533,7 +582,7 @@ function totals() {
 
   const grand = afterDiscount + taxAmount;
 
-  return { curr, flightPrice, hotelsTotal, transportTotal, subtotal, discount, taxAmount, grand };
+  return { curr, flightPrice, hotelsTotal, transportTotal, subtotal, discount, taxAmount, grand, intercityTotal  };
 }
 
 function getPeopleCount() {
@@ -754,10 +803,23 @@ function setupVisibility() {
     interEl.addEventListener("change", () => {
       const yes = interEl.value === "yes";
       toggle($("intercityDetailsWrap"), yes);
-      if (!yes && $("intercityDetails")) $("intercityDetails").value = "";
-      renderAll();
+      toggle($("intercityCountWrap"), yes);
+      toggle($("intercityPricesWrap"), yes);
+      if (!yes) {
+            if ($("intercityDetails")) $("intercityDetails").value = "";
+            if ($("intercityCount")) $("intercityCount").value = 0;
+            if ($("intercityPrices")) $("intercityPrices").innerHTML = "";
+          } else {
+            renderIntercityPrices();
+          }      
+          renderAll();
     });
   }
+  // لما العدد يتغير نعيد توليد الـ inputs
+  $("intercityCount")?.addEventListener("input", () => {
+    renderIntercityPrices();
+    renderAll();
+  });
 
   $("hasSightseeing")?.addEventListener("change", () => {
     const yes = $("hasSightseeing").value === "yes";
@@ -828,7 +890,9 @@ function bindGeneralInputs() {
     "terms",
     "hasSightseeing",
     "sightseeingCount",
-    "sightseeingPrice"
+    "sightseeingPrice",
+    "intercityCount", //new
+
   ];
 
   ids.forEach((id) => {
@@ -897,6 +961,11 @@ function init() {
 
   if ($("airline")) toggle($("airlineOtherWrap"), $("airline").value === "أخرى");
   if ($("hasIntercity")) toggle($("intercityDetailsWrap"), $("hasIntercity").value === "yes");
+  const interYes = $("hasIntercity")?.value === "yes";
+  toggle($("intercityCountWrap"), interYes);
+  toggle($("intercityPricesWrap"), interYes);
+  if (interYes) renderIntercityPrices();
+
 
   if ($("hasSightseeing")) {
     const yes = $("hasSightseeing").value === "yes";
