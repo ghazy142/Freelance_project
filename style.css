@@ -288,41 +288,13 @@ hr{
 
 /* Header inside PDF */
 .pdfHeader{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 2px solid #e7eaf3;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:2px solid #e7eaf3;
+  padding-bottom:12px;
+  margin-bottom:12px;
 }
-
-.pdfCol{
-  flex: 1;
-}
-
-.pdfRight{
-  text-align: right;
-}
-
-.pdfCenter{
-  text-align: center;
-}
-
-.pdfLeft{
-  text-align: left;
-}
-
-.pdfTitle{
-  font-weight: 900;
-  font-size: 18px;
-}
-
-.pdfSmall{
-  font-size: 12px;
-  margin-top: 4px;
-}
-
 
 .pdfCompany{font-size:20px; font-weight:900}
 .pdfTitleBox{text-align:start}
@@ -632,8 +604,6 @@ hr{
     line-height: 1.8;
   }
 }
-
-
 /* ✅ PDF Header: force 3 columns in PRINT */
 @media print {
   .pdfHeader{
