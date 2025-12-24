@@ -59,6 +59,18 @@ function toggle(el, show) {
   el.classList.toggle("hidden", !show);
 }
 
+
+function toggleHotelPriceColumn(show) {
+  document.querySelectorAll(".hotelPriceCol").forEach((el) => {
+    el.classList.toggle("hidden", !show);
+  });
+}
+
+function fixEmptyHotelsColspan(showHotelPrice) {
+  const td = document.querySelector("#pHotelsBody td[colspan]");
+  if (td) td.colSpan = showHotelPrice ? 7 : 6;
+}
+
 /* =========================
    Destinations (Bootstrap dropdown + search + checkboxes)
 ========================= */
@@ -408,7 +420,7 @@ function renderPreviewHotels() {
       <td class="num">${h.rooms || "—"}</td>
       <td>${h.roomType || "—"}</td>
       <td>${h.meals || "—"}</td>
-      <td class="num">${money(h.price)}</td>
+      <td class="num hotelPriceCol">${money(h.price)}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -539,15 +551,7 @@ function resolvePriceDisplayMode() {
 }
 
 /* =========================
-   Price Breakdown Visibility (NEW)
-   - controlled by <select id="showBreakdown">
-   - hides/shows #pBreakdownWrap in the preview
-========================= */
-function resolveBreakdownVisible() {
-  // default: show breakdown if control not present
-  const v = $("showBreakdown")?.value || "yes";
-  return v !== "no";
-}
+
 
 /* =========================
    Stay Summary
@@ -639,15 +643,29 @@ function renderAll() {
   if ($("pPerPerson")) $("pPerPerson").textContent = money(perPerson);
 
   // Price mode (total/perPerson/both/auto)
-  const mode = resolvePriceDisplayMode();
-  const perWrap = $("pPerPersonWrap");
-  const grandWrap = $("pGrandWrap");
-  if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
-  if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
+const mode = resolvePriceDisplayMode();
+const perWrap = $("pPerPersonWrap");
+const grandWrap = $("pGrandWrap");
 
-  // ✅ NEW: Breakdown visibility (hide hotel/flight/transport lines together)
+if (perWrap) toggle(perWrap, mode === "both" || mode === "perPerson");
+if (grandWrap) toggle(grandWrap, mode === "both" || mode === "total");
+  // ✅ NEW RULE:
+  // Auto => show full breakdown
+  // Anything else => hide breakdown
+  const priceDisplayRaw = $("priceDisplay")?.value || "auto";
+  const detailsVisible = priceDisplayRaw === "auto";
+
+  // Breakdown
   const breakdownWrap = $("pBreakdownWrap");
-  if (breakdownWrap) toggle(breakdownWrap, resolveBreakdownVisible());
+  if (breakdownWrap) toggle(breakdownWrap, detailsVisible);
+
+  // Hotel price column in hotels table
+  toggleHotelPriceColumn(detailsVisible);
+  fixEmptyHotelsColspan(detailsVisible);
+
+
+
+
 
   if ($("pNotes")) $("pNotes").textContent = $("notes")?.value?.trim() || "—";
 
@@ -753,8 +771,7 @@ function setupVisibility() {
     renderAll();
   });
 
-  // ✅ NEW: showBreakdown toggle (breakdown lines)
-  $("showBreakdown")?.addEventListener("change", renderAll);
+
 }
 
 function bindGeneralInputs() {
@@ -803,7 +820,7 @@ function bindGeneralInputs() {
     "intercityDetails",
     "transportNotes",
 
-    "showBreakdown", // ✅ NEW
+
     "priceDisplay",
     "discount",
     "tax",

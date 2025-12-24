@@ -372,14 +372,7 @@
         <input id="tax" type="number" min="0" value="0" />
       </label>
 
-      <!-- ✅ NEW: إظهار/إخفاء تفاصيل الأسعار -->
-      <label class="span2">
-        إظهار تفاصيل الأسعار (الطيران/الفنادق/المواصلات... إلخ)؟
-        <select id="showBreakdown">
-          <option value="yes" selected>نعم</option>
-          <option value="no">لا (اعرض الإجمالي وسعر الشخص فقط)</option>
-        </select>
-      </label>
+
 
       <label class="span2">
         عرض السعر
@@ -473,7 +466,7 @@
               <th class="num">عدد الغرف</th>
               <th>نوع الغرف</th>
               <th>خطة الوجبات</th>
-              <th class="num">السعر</th>
+              <th class="num hotelPriceCol">السعر</th>
             </tr>
           </thead>
           <tbody id="pHotelsBody"></tbody>
