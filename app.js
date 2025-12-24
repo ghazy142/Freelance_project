@@ -110,6 +110,42 @@ function getIntercityTotal() {
   );
 }
 
+// الطيران الداخلي
+function renderDomesticFlightPrices() {
+  const box = $("domesticFlightPrices");
+  if (!box) return;
+
+  const yes = document.querySelector('input[name="hasDomesticFlight"]:checked')?.value === "yes";
+  const n = yes ? Number($("domesticFlightCount")?.value || 0) : 0;
+
+  const prev = Array.from(box.querySelectorAll('input[data-df-price]')).map(
+    (inp) => Number(inp.value || 0)
+  );
+
+  box.innerHTML = "";
+  if (!yes || n <= 0) return;
+
+  for (let i = 0; i < n; i++) {
+    const label = document.createElement("label");
+    label.innerHTML = `
+      سعر الرحلة ${i + 1}
+      <input data-df-price type="number" min="0" value="${prev[i] ?? 0}" />
+    `;
+    label.querySelector("input").addEventListener("input", renderAll);
+    box.appendChild(label);
+  }
+}
+
+function getDomesticFlightTotal() {
+  const box = $("domesticFlightPrices");
+  if (!box) return 0;
+  return Array.from(box.querySelectorAll('input[data-df-price]')).reduce(
+    (sum, inp) => sum + Number(inp.value || 0),
+    0
+  );
+}
+
+
 
 /* =========================
    Destinations (Bootstrap dropdown + search + checkboxes)
@@ -486,8 +522,31 @@ function getAirlineText() {
 }
 
 function flightText() {
-  if (!hasFlight()) return "لا يشمل العرض الطيران الدولي.";
+  // Domestic flight (internal)
+  const domYes =
+    document.querySelector('input[name="hasDomesticFlight"]:checked')?.value === "yes";
 
+  const domCount = domYes ? Number($("domesticFlightCount")?.value || 0) : 0;
+  const domTotal = domYes ? getDomesticFlightTotal() : 0;
+  const curr = $("currency")?.value || "AED";
+  const domNote = $("domesticFlightNote")?.value?.trim() || "";
+
+  const domesticLine = domYes
+    ? `✅ طيران داخلي${domCount ? ` (${domCount})` : ""} — إجمالي ${money(domTotal)} ${curr}${
+        domNote ? `\nتفاصيل: ${domNote}` : ""
+      }`
+    : "";
+
+  // International flight (existing)
+  const intlYes = hasFlight();
+
+  // No flights at all
+  if (!intlYes && !domYes) return "لا يشمل العرض الطيران.";
+
+  // Domestic only
+  if (!intlYes && domYes) return domesticLine;
+
+  // International (with optional domestic appended)
   const airline = getAirlineText();
   const type = $("flightType")?.value || "—";
   const bag = $("baggage")?.value || "—";
@@ -497,8 +556,13 @@ function flightText() {
   const back = `*رحلة العودة*\nمن ${$("fromCityBack")?.value || "—"} إلى ${$("toCityBack")?.value || "—"}\nإقلاع ${$("backDepTime")?.value || "—"} وصول ${$("backArrTime")?.value || "—"}`;
 
   const head = `✅ طيران ${type} على ${airline} مع وزن ${bag} كيلو ✈️`;
-  return `${head}\n\n${go}\n\n${back}${note ? `\n\nملاحظة: ${note}` : ""}`;
+  let out = `${head}\n\n${go}\n\n${back}${note ? `\n\nملاحظة: ${note}` : ""}`;
+
+  if (domYes) out += `\n\n${domesticLine}`;
+
+  return out;
 }
+
 
 /* =========================
    Transport + Intercity + Tours (independent) + Trains
@@ -558,7 +622,11 @@ function transportText() {
 function totals() {
   const curr = $("currency")?.value || "AED";
 
-  const flightPrice = hasFlight() ? Number($("flightPrice")?.value || 0) : 0;
+  const intlFlight = hasFlight() ? Number($("flightPrice")?.value || 0) : 0;
+  const domesticYes = document.querySelector('input[name="hasDomesticFlight"]:checked')?.value === "yes";
+  const domesticFlightTotal = domesticYes ? getDomesticFlightTotal() : 0;
+
+  const flightPrice = intlFlight + domesticFlightTotal;
   const hotelsTotal = state.hotels.reduce((s, h) => s + Number(h.price || 0), 0);
 
   const transferPrice = $("hasTransfer")?.value === "yes" ? Number($("transferPrice")?.value || 0) : 0;
@@ -582,7 +650,7 @@ function totals() {
 
   const grand = afterDiscount + taxAmount;
 
-  return { curr, flightPrice, hotelsTotal, transportTotal, subtotal, discount, taxAmount, grand, intercityTotal  };
+  return { curr, flightPrice, hotelsTotal, transportTotal, subtotal, discount, taxAmount, grand, intercityTotal, domesticFlightTotal   };
 }
 
 function getPeopleCount() {
@@ -834,7 +902,32 @@ function setupVisibility() {
   });
 
 
+  document.querySelectorAll('input[name="hasDomesticFlight"]').forEach((el) => {
+  el.addEventListener("change", () => {
+    const yes = document.querySelector('input[name="hasDomesticFlight"]:checked')?.value === "yes";
+    toggle($("domesticFlightBox"), yes);
+
+    if (!yes) {
+      if ($("domesticFlightCount")) $("domesticFlightCount").value = 0;
+      if ($("domesticFlightPrices")) $("domesticFlightPrices").innerHTML = "";
+      if ($("domesticFlightNote")) $("domesticFlightNote").value = "";
+    } else {
+      renderDomesticFlightPrices();
+    }
+
+    renderAll();
+  });
+});
+
+$("domesticFlightCount")?.addEventListener("input", () => {
+  renderDomesticFlightPrices();
+  renderAll();
+});
+
+
 }
+
+
 
 function bindGeneralInputs() {
   const ids = [
@@ -892,6 +985,9 @@ function bindGeneralInputs() {
     "sightseeingCount",
     "sightseeingPrice",
     "intercityCount", //new
+    "domesticFlightCount",
+    "domesticFlightNote",
+
 
   ];
 
@@ -946,6 +1042,9 @@ function init() {
 
   setupVisibility();
   bindGeneralInputs();
+  const domYes = document.querySelector('input[name="hasDomesticFlight"]:checked')?.value === "yes";
+  toggle($("domesticFlightBox"), domYes);
+  if (domYes) renderDomesticFlightPrices();
 
   $("btnAddHotel")?.addEventListener("click", () => addHotelRow());
   $("btnDownload")?.addEventListener("click", downloadPDF);
@@ -978,5 +1077,6 @@ function init() {
 
   renderAll();
 }
+
 
 document.addEventListener("DOMContentLoaded", init);

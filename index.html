@@ -241,7 +241,36 @@
       </div>
     </div>
 
-    <hr />
+    <hr /> 
+          <!-- الطيران الداخلي -->
+      <hr />
+
+        <h3>هل يوجد طيران داخلي؟</h3>
+        <div class="toggleRow">
+          <label class="radio"><input type="radio" name="hasDomesticFlight" value="yes"> نعم</label>
+          <label class="radio"><input type="radio" name="hasDomesticFlight" value="no" checked> لا</label>
+        </div>
+
+        <div id="domesticFlightBox" class="subCard hidden">
+          <div class="formGrid">
+            <label>
+              كم رحلة/قطاع داخلي؟
+              <input id="domesticFlightCount" type="number" min="0" value="0" />
+            </label>
+
+            <label class="span2">
+              أسعار الطيران الداخلي
+              <div id="domesticFlightPrices" class="formGrid"></div>
+            </label>
+
+            <label class="span2">
+              تفاصيل الطيران الداخلي (اختياري)
+              <input id="domesticFlightNote" type="text" placeholder="مثال: موسكو → سوتشي / سوتشي → سانت بطرسبرغ" />
+            </label>
+          </div>
+        </div>
+      <!-- نهاية الطيران الداخلي -->
+
 
     <h3>تفاصيل البرنامج (اختياري)</h3>
     <label class="block">
@@ -462,6 +491,10 @@
         <h4>تفاصيل البرنامج</h4>
         <p id="pProgramDetails" class="prewrap muted">—</p>
       </div>
+
+
+
+
 
       <div class="pdfSection">
         <h4>الفنادق بكل مدينة</h4>
